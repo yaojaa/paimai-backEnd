@@ -8,9 +8,9 @@
 class Bootstrap extends Yaf_Bootstrap_Abstract {
 
 	public function _initConfig(Yaf_Dispatcher $dispatcher) {
-        	$config = Yaf_Application::app()->getConfig();
-        	Yaf_Registry::set("config", $config);
-    	}
+       $config = Yaf_Application::app()->getConfig();
+       Yaf_Registry::set("config", $config);
+    }
 
 	public function _initRoute(Yaf_Dispatcher $dispatcher)
 	{
