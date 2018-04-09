@@ -5,14 +5,13 @@ abstract class BaseModel
     protected $db = 'database name';    
     protected $pk = 'primary key name';
     protected $table = 'table name';
-    
-
     protected $conn = NULL;
     private $config = NULL; #array
 
-    public function __construct($db = NULL)
+    public function __construct()
     {
-        $this->config = \Yaf\Application::app()->getConfig()->mysql->toArray();
+		$ini = new Yaf_Config_Ini(CONFIG_PATH . "/mysql.ini", $this->db); 
+        $this->config = $ini->toArray();
         $this->conn = $this->connect();
     }
 
@@ -25,7 +24,7 @@ abstract class BaseModel
 
     private function connect()
     {
-        $conn = new mysqli($this->config['host'], $this->config['user'], $this->config['pass'], $this->config['name'], $this->config['port']);
+        $conn = new mysqli($this->config['host'], $this->config['user'], $this->config['pass'], $this->config['db'], $this->config['port']);
 
         if ($conn->connect_errno) {
             $this->halt($conn->connect_errno, $conn->connect_error);
@@ -36,22 +35,22 @@ abstract class BaseModel
     }
 
 
-    final public function query($sql)
+    public function query($sql)
     {
         $result = $this->conn->query($sql);
 
         if ($this->conn->errno) {
-            $this->halt($this->conn->errno, $this->conn->error);
+            $this->halt($sql, $this->conn->errno, $this->conn->error);
             return false;
         }
-	    return $result;
+		return $result;
     }
 
 
-    private function halt($errno, $error)
+    private function halt($sql, $errno, $error)
     {
-        $msg = sprintf("Time:s%\tHost:%s\tPort:%d\tDatabase:%s\tErrno:%d\tError:%s", date("Y-m-d H:i:s"), $this->config['host'], $this->config['port'], $this->config['name'], $errno, $error) . PHP_EOL;
-        $file = $this->config['log_save_path'] . date("Ymd").".log";
+        $msg = sprintf("Time:%s\tHost:%s\tPort:%d\tDatabase:%s\tErrno:%d\tError:%s\tSQL:%s", date("Y-m-d H:i:s"), $this->config['host'], $this->config['port'], $this->config['db'], $errno, $error, $sql) . PHP_EOL;
+        $file = sprintf($this->config['log'],date("Ymd"));
         error_log($msg, 3,  $file);
         if ($this->config['debug']) {
             echo $msg;
@@ -59,7 +58,7 @@ abstract class BaseModel
     }
 
     
-    final public function getRow($id, $columns = "*")
+    public function getRow($id, $columns = "*")
     {
         $sql = "select $columns from $this->table where $this->pk = $id";
         $result = $this->query($sql);
@@ -71,7 +70,7 @@ abstract class BaseModel
 
 
 
-    final public function getColumn($id, $column) 
+    public function getColumn($id, $column) 
     {        
         $sql = "select $column from $this->table where $this->pk = $id";
         $result = $this->query($sql);        
@@ -81,7 +80,7 @@ abstract class BaseModel
         return false;
     }
 
-    final public function getAll($columns, $where, $order)
+    public function getAll($columns, $where, $order)
     {
         $sql = "select $columns from $this->table where $where order by $order";
         $result = $this->query($sql);        
@@ -96,7 +95,7 @@ abstract class BaseModel
         return $rows;
     }
 
-    final public function scalar($columns, $where, $order)
+    public function scalar($columns, $where, $order)
     {
         $sql = "select $columns from $this->table where $where order by $order limit 1";
         $result = $this->query($sql);     
@@ -106,7 +105,7 @@ abstract class BaseModel
         return $result->fetch_assoc();
     }
 
-    final public function getLimit($columns, $where, $order, $start, $limit)
+    public function getLimit($columns, $where, $order, $start, $limit)
     {
         $sql = "select $columns from $this->table where $where order by $order limit $start, $limit";
         $result = $this->query($sql);     
@@ -123,7 +122,7 @@ abstract class BaseModel
     }
 
 
-    final public function getCount($where)
+    public function getCount($where)
     {
         $sql = "select count(id) as total from $this->table where $where";
         $result = $this->query($sql);
@@ -133,12 +132,12 @@ abstract class BaseModel
     }
 
 
-    final public function insert($data)
+    public function insert($data)
     {
     }
 
 
-    final public function update($id, $data)
+    public function update($id, $data)
     {
     }
 
