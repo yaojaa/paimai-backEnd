@@ -22,19 +22,13 @@
             <h2 class="fwn"><span class="text-muted f16">商品管理</span>/添加商品</h2></div>
         <?php if (isset($error)) { ?>
         <div class="ui visible negative message mt-n">
-            <?php echo $error;?>
-        </div>
-        <?php } else { ?>
-        <div class="ui hidden negative message mt-n">
-            <?php echo $error;?>
+            <?php echo $error; ?>
         </div>
         <?php } ?>
         <div class="white-wrap p-xl">
             <form action="/admin/good/add" class="ui form" method="post" id="myForm">
                 <?php if (isset($good)) { ?>
-                <input name="id" values="<?php echo $good['id'];?>" style="display: none">
-                <?php } else { ?>
-                <input style="display: none">
+                <input name="id" value="<?php echo $good['id'];?>" style="display: none">
                 <?php } ?>
                 <div class="field required">
                     <label>商品名称</label>
@@ -57,9 +51,9 @@
                         <label>类别</label>
                         <select class="ui fluid dropdown type-dropdown" name="category">
                             <option value="">请选择类别</option>
-                            <option value="AK">当代名画</option>
-                            <option value="AZ">现代仿品</option>
-                            <option value="AR">工艺品</option>
+                            <option value="AK" <?php if(isset($good) && $good['category'] == 'AK') echo "selected";?>>当代名画</option>
+                            <option value="AZ" <?php if(isset($good) && $good['category'] == 'AZ') echo "selected";?>>现代仿品</option>
+                            <option value="AR" <?php if(isset($good) && $good['category'] == 'AR') echo "selected";?>>工艺品</option>
                         </select>
                     </div>
                     <div class="field required">
@@ -171,7 +165,7 @@
                     <?php } ?>
                 </div>
                 <?php if (isset($good)) { ?>
-                <textarea id="editor" placeholder="商品详情" autofocus name="description" value="<?php echo $good['description'];?>"></textarea>
+                <textarea id="editor" placeholder="商品详情" autofocus name="description"><?php echo $good['description'];?></textarea>
                 <?php } else { ?>
                 <textarea id="editor" placeholder="商品详情" autofocus name="description"></textarea>
                 <?php } ?>

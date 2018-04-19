@@ -112,9 +112,11 @@ abstract class BaseModel
         return $result->fetch_assoc();
     }
 
-    public function getLimit($columns, $where, $order, $start, $limit)
+    public function getLimit($columns, $where, $order, $page, $pagesize)
     {
-        $sql = "select $columns from $this->table where $where order by $order limit $start, $limit";
+		$page = $page < 1 ? 1 : $page;
+		$start = ($page-1)*$pagesize;
+        $sql = "select $columns from $this->table where $where order by $order limit $start, $pagesize";
         $result = $this->query($sql);     
 
         if (!$result) return false;

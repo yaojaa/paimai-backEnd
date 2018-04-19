@@ -111,7 +111,7 @@ class GoodController extends Yaf_Controller_Abstract {
 				goto GOTO_ERROR;
 			}
 			$endTime = strtotime($endTime);
-			$description = $this->getRequest()->getPost('descritpion', '');
+			$description = $this->getRequest()->getPost('description', '');
 			$pic = $this->getRequest()->getPost('pic', '');
 			if (!$pic) {
 				$error = '封面图不能为空'; 
