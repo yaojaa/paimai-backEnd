@@ -1,0 +1,47 @@
+<?php include "admin_header.html";?>
+<body>
+    <div class="ui top fixed  menu headBar">
+        <div class="left menu">
+            <div class="item noLine"><span class="f26 text-blue">微艺拍</span></div>
+            <div class="item noLine pl-n">后台管理系统</div>
+        </div>
+        <div class="right menu">
+            <div class="item noLine"><img class="ui avatar image" src="img/head.jpg">
+                <span><?php echo $_SESSION['username'];?></span></div>
+            <a class="item noLine">
+                <i class="sign out icon"></i>
+            </a>
+        </div>
+    </div>
+    <div class="manage-sidebar">
+        <div class="ui huge vertical menu">
+            <div class="item">
+                <div class="header"><i class="setting icon"></i>商品管理</div>
+                <div class="menu">
+                    <a class="item J_menuItem" href="/admin/good/list">商品列表</a>
+                    <a class="item J_menuItem" href="/admin/good/add">添加商品</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="header"><i class="setting icon"></i>订单管理</div>
+                <div class="menu">
+                    <a class="item J_menuItem" href="/admin/order/list">订单列表</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="manage-content">
+        <div class="row J_mainContent" id="content-main">
+            <iframe class="J_iframe" name="iframe0" width="100%" height="100%" src="/admin/good/add" frameborder="0" data-id="/admin/good/add" seamless></iframe>
+        </div>
+    </div>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL?>js/jquery.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL?>js/semantic.min.js"></script>
+    <!-- <script src="js/slimscroll/jquery.slimscroll.min.js"></script> -->
+    <script src="<?php echo CONFIG_BASE_URL?>js/layer/layer.min.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL?>js/contabs.min.js"></script>
+    <script type="text/javascript">
+    </script>
+</body>
+
+</html>

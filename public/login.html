@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>微艺拍后台管理-登录</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="css/semantic.min.css" rel="stylesheet">
+    <link href="css/common.css" rel="stylesheet">
+    <style type="text/css" media="screen">
+    .login-wrap {
+        width: 375px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 10px;
+        background: #fff;
+        box-shadow: 0 0 30px rgba(137, 157, 197, 0.1);
+    }
+    .login-logo{
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top:-60px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="login-wrap transition visible">
+        <div class="por animated-box">
+            <div class="login-logo">
+                <h1>微艺拍</h1>
+            </div>
+            <div class="ui padded grid ">
+                <div class="column">
+                    <form class="ui form f15">
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <input type="text" placeholder="账户" value="admin">
+                                <i class="user icon"></i>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <input type="password" placeholder="密码">
+                                <i class="lock icon"></i>
+                            </div>
+                        </div>
+                        <div class="ui animated fade button blue fluid large">
+                            <div class="visible content">登录</div>
+                            <div class="hidden content">
+                                登录<i class="chevron circle right icon"></i>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/semantic.min.js"></script>
+    <script type="text/javascript">
+    $('.animated-box')
+        .transition('horizontal flip in');
+    </script>
+</body>
+
+</html>

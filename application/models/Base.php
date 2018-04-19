@@ -15,6 +15,10 @@ abstract class BaseModel
         $this->conn = $this->connect();
     }
 
+    public static function escape ( $str ) {
+		return $str;
+    }
+
     /**
      * 预处理参数
      * @param array $parameters
@@ -30,6 +34,9 @@ abstract class BaseModel
             $this->halt($conn->connect_errno, $conn->connect_error);
             return false;
         } 
+
+
+		$conn->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
 
         return $conn; 
     }
@@ -134,11 +141,37 @@ abstract class BaseModel
 
     public function insert($data)
     {
+        $columns = ""; 
+        $values = ""; 
+
+        foreach( $data as $k=>$v )
+        {   
+            $columns .= "`{$k}`,";
+            $values .= "'" . self::escape( $v ) . "',";
+        }   
+
+        $columns = trim( $columns, ',' );
+        $values = trim( $values, ',' );
+        $sql = "insert into {$this->table}({$columns}) values ({$values})";
+		$rs = $this->query($sql);
+		if (false !== $rs) return $this->conn->insert_id;
+		return false;
     }
 
 
     public function update($id, $data)
     {
+        $set = "";     
+        foreach( $data as $k=>$v )
+        {
+            $set .= "`{$k}` = '" . self::escape( $v ) . "',";
+        }
+        $set = trim( $set, ',' );
+        $sql = "update {$this->table} set {$set} where `{$this->pk}`='{$id}'";
+		$rs = $this->query($sql);
+		if (false !== $rs) return $this->conn->affected_rows;
+		return false;
+
     }
 
 }

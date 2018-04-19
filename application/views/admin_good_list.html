@@ -1,0 +1,96 @@
+<?php include "admin_header.html";?>
+
+<body>
+    <div class="ui container animated fadeInRight">
+        <div class="sub-title text-justify">
+            <h2 class="fwn"><span class="text-muted f16">商品管理</span>/商品列表</h2></div>
+        <div class="white-wrap p-xl">
+            <div class="ui form">
+                <div class="fields inline mb-n">
+                    <div class="fourteen wide field">
+                        <div class="ui left icon input">
+                            <input type="text" placeholder="可按商品标题搜索" id="searchInput" onkeydown="KeyDown()"> <i class="search icon"></i></div>
+                    </div>
+                    <div class="two wide field">
+                        <button class="ui fluid blue button" id="searchBtn">搜索</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui divider hidden"></div>
+        <div class="white-wrap p-xl">
+            <table class="ui padded default table">
+                <thead>
+                    <tr>
+                        <th>商品名称</th>
+                        <th>作者</th>
+                        <th>开始结束时间</th>
+                        <th>权重</th>
+                        <th>保证金</th>
+                        <th>起拍价</th>
+                        <th>现价</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($list as $good) { ?>
+                    <tr>
+                        <td>
+                            <?php echo $good['title'];?>
+                        </td>
+                        <td>
+                            <?php echo $good['author'];?>
+                        </td>
+                        <td>
+                            <?php echo date("Y-m-d H:i:s", $good['start_time']);?>
+                            <br>
+                            <?php echo date("Y-m-d H:i:s", $good['end_time']);?>
+                        </td>
+                        <td>
+                            <?php echo $good['seqid'];?>
+                        </td>
+                        <td>￥
+                            <?php echo $good['security_deposit'];?>
+                        </td>
+                        <td>￥
+                            <?php echo $good['start_price'];?>
+                        </td>
+                        <td class="text-orange">￥
+                            <?php echo $good['last_price'];?>
+                        </td>
+                        <td>
+                            <?php echo $good['status_name'];?>
+                        </td>
+                        <td>
+                            <a href="/admin/good/add?id=<?php echo $good['id'];?>" class="text-nowrap">编辑</a>
+                            <a href="javascript:;" class="text-nowrap">复制</a>
+                            <?php if ($good['status'] == 0) { ?>
+                            <a href="javascript:;" class="text-nowrap">上架</a>
+                            <?php } ?>
+                            <?php if ($good['status'] == 1) { ?>
+                            <a href="javascript:;" class="text-nowrap">下架</a>
+                            <?php } ?>
+                            <a href="javascript:;" class="text-nowrap">删除</a>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+        <?php echo $pageHtml;?>
+    </div>
+    <?php include "admin_footer.html";?>
+    <script>
+    function search() {
+        var text = $('#searchInput').val()
+        location.href = "/admin/good/list?search=" + text
+    }
+    $('#searchBtn').on('click', search);
+
+    function KeyDown() {
+        if (event.keyCode == 13) {
+           search()
+        }
+    }
+    </script>
