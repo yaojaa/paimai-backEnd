@@ -64,11 +64,11 @@
                         </td>
                         <td>
                             <a href="/admin/good/add?id=<?php echo $good['id'];?>" class="text-nowrap">编辑</a>
-                            <a href="javascript:;" class="text-nowrap">复制</a>
+                            <a href="/admin/good/clone?id=<?php echo $good['id'];?>" class="text-nowrap">复制</a>
                             <?php if ($good['status'] == 0) { ?>
-                            <a href="javascript:;" class="text-nowrap">上架</a>
+                            <a href="/admin/good/online?id=<?php echo $good['id'];?>" class="text-nowrap">上架</a>
                             <?php } ?>
-                            <?php if ($good['status'] == 1) { ?>
+                            <?php if ($good['status'] > 0) { ?>
                             <a href="/admin/good/offline?id=<?php echo $good['id'];?>" class="text-nowrap">下架</a>
                             <?php } ?>
                             <a href="/admin/good/delete?id=<?php echo $good['id'];?>" class="text-nowrap">删除</a>

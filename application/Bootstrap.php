@@ -16,6 +16,12 @@ class Bootstrap extends Yaf_Bootstrap_Abstract {
 	{
         $router = Yaf_Dispatcher::getInstance()->getRouter();
 
+        $route = new Yaf_Route_Rewrite('admin/good/clone', array('controller' => 'good', 'action' => 'clone'));
+        $router->addRoute('admin_good_clone', $route);
+
+        $route = new Yaf_Route_Rewrite('admin/good/online', array('controller' => 'good', 'action' => 'online'));
+        $router->addRoute('admin_good_online', $route);
+
         $route = new Yaf_Route_Rewrite('admin/good/offline', array('controller' => 'good', 'action' => 'offline'));
         $router->addRoute('admin_good_offline', $route);
 

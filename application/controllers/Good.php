@@ -20,12 +20,12 @@ class GoodController extends Yaf_Controller_Abstract {
 		$list = $goodModel->getLimit("id,title,author,start_time,end_time,seqid,security_deposit,start_price,last_price,status", $where, "id desc", $page, $pagesize);
 		if ($list) {
 			foreach ($list as &$r) {
-				$r['status_name'] = GoodModel::getStatusName($r['status']);
+				$r['status_name'] = GoodModel::getStatusName($r['status'], $r['start_time'], $r['end_time']);
 			}
 			unset($r);
 		}
 
-		$total = $goodModel->getCount("status > -1");
+		$total = $goodModel->getCount($where);
 		$pageHtml = Pager::default_pager($total, $pagesize, $page, ceil($total/$pagesize));
 
 		$this->getView()->assign('list', $list);
@@ -39,8 +39,9 @@ class GoodController extends Yaf_Controller_Abstract {
 		$id = $this->getRequest()->getQuery('id', false);
 		if (!$id) Response::back('Parameter Error!'); 
 		$goodModel = new GoodModel();
-		$row = $goodModel->getRow($id, 'title, author_id, author, pic, category, size, format, seal, ecurity_deposit, start_pirce, market_price, incr_price, description'); 
+		$row = $goodModel->getRow($id, 'title, author_id, author, pic, category, size, format, seal, security_deposit, start_time, end_time, start_price, market_price, incr_price, description'); 
 		if (!$row) Response::back('Object not exists!'); 
+		$row['admin_id'] = $this->adminId;
 		$rs = $goodModel->insert($row);
 		if ($rs) Response::alert('提交成功', '/admin/good/list');
 		Response::back('Operation is fail!');
@@ -166,6 +167,14 @@ class GoodController extends Yaf_Controller_Abstract {
 		$this->getView()->display('admin_good_add.html');
 		exit;
     }
+
+	public function onlineAction()
+	{
+		$id = (int)$this->getRequest()->getQuery('id', 0);
+		$goodModel = new GoodModel();
+		$rs = $goodModel->update($id, array('status'=>1));
+		Response::back("操作成功");
+	}
 
 	public function offlineAction()
 	{

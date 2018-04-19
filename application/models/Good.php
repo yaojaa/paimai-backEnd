@@ -22,10 +22,8 @@ class GoodModel extends BaseModel
 			case 1:
 				return $t < $stime ? '预拍' : ($t > $etime ? '已拍结' : '热拍中');
 			case 2:
-				return '已下架';
-			case 3:
 				return '已拍结';
-			case 4:
+			case 3:
 				return '已支付';
 			default:
 				return 'Unknown';
