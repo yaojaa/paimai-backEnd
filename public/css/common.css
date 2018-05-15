@@ -832,3 +832,7 @@ a {
 .headBar.ui.menu .noLine.item:before {
     display: none;
 }
+.thumbnail img{
+    max-width: 200px;
+    height: auto;
+}

@@ -1,4 +1,5 @@
 <?php
+ini_set("display_errors", 1);
 define("ROOT_PATH",  realpath(dirname(__FILE__) . '/../'));
 define("APP_PATH",  ROOT_PATH);
 define("CONFIG_PATH",  ROOT_PATH."/conf");

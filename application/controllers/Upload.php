@@ -44,7 +44,7 @@ class UploadController extends Yaf_Controller_Abstract {
 		$infos = $up->getSaveInfo();
 		$url = $infos[0]['saveas'];
 		$return['success'] = true; 
-		$return['file_path'] = $url;
+		$return['file_path'] = $c['url'].$url;
 		echo json_encode($return);
 		exit;
     }

@@ -14,7 +14,7 @@ class GoodModel extends BaseModel
 	public static function getStatusName($status, $stime=0, $etime=0)
 	{
 		$t = time();
-		switch ($status) {
+		switch($status) {
 			case -1:
 				return '已删除';
 			case 0:
@@ -44,4 +44,5 @@ class GoodModel extends BaseModel
 
 		return $list;
 	}
+
 }

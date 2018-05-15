@@ -41,6 +41,19 @@ abstract class BaseModel
         return $conn; 
     }
 
+	public function getQuery($sql)
+	{
+		$result = $this->query($sql);
+        if (!$result) return false;
+
+        $rows = array();
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        $result->free();
+        return $rows;
+	}
 
     public function query($sql)
     {
