@@ -1,21 +1,28 @@
 <?php
+header("Access-Control-Allow-Origin: *"); 
+
 class ApiController extends Yaf_Controller_Abstract {
 
+	const PAGESIZE = 15;
 	private $uid = 0;
 
 	public function getUid()
 	{
-		return 1;
+		$uid = $this->getRequest()->getQuery('uid', false);
+		if ($uid) return $uid;
+		$c = new CookieLogin();
+		$this->uid = $c ->getUid();
+		return $this->uid;
 	}
+
 
 	public function checkLogin()
 	{
 		$uid = $this->getUid();
-		if (!$this->uid) {
+		if (!$uid) {
 			Response::displayJson(Response::E_USER_NO_LOGIN, NULL);
 		}
-
-		return $this->uid;
+		return $uid;
 	}
 
     public function indexAction() {
@@ -91,11 +98,11 @@ class ApiController extends Yaf_Controller_Abstract {
 		# check offer
 		if (!$good['last_uid']) {
 			if ($price != $good['start_price'] &&  $price < $good['start_price'] + $good['incr_price']) {
-				Response::displayJson(Response::E_NO_OBJ, $good['start_price']);
+				Response::displayJson(Response::E_NO_OBJ, NULL, $good['start_price']);
 			}
 		} else { 
 			if ($price < $good['last_price'] + $good['incr_price']) {
-				Response::displayJson(Response::E_NO_OBJ, $good['last_price']);
+				Response::displayJson(Response::E_NO_OBJ, NULL, $good['last_price']);
 			}
 		}
 
@@ -128,42 +135,52 @@ class ApiController extends Yaf_Controller_Abstract {
 		}
 		unset($l);
 
-		Response::displayJson(Response::E_SUCCESS, $list);
+		Response::displayJson(Response::E_SUCCESS, NULL, $list);
 	}
 
 
 	public function sendMobileVerifyCodeAction()
 	{
+		$uid = $this->checkLogin();
 		$mobile = $this->getRequest()->getPost('mobile', false);
 		if (!$mobile)
 			Response::displayJson(Response::E_PARAM, NULL);
 		
 		$code = mt_rand(100000, 999999);
-		$rs = Sms::send($mobile, $code);
+		$rs = Sms::sendOne($mobile, $code);
 		if (!$rs) Response::displayJson(Response::E_USER_MOBILE_CODE, NULL);
 
-		$_SESSION['mobile'] = $mobile;
-		$_SESSION['code'] = $code;
-		Response::displayJson(Response::E_SUCESS, NULL);
+		$mcModel = new MobileVerifyCodeModel();
+		$time = time();
+		$data = array('uid' => $uid, 'mobile' => $mobile, 'send_time' => $time, 'code' => $code); 
+		$rs = $mcModel -> insert($data);
 
-		#$mcModel = new MobileCheckModel();
-		#$time = time();
-		#$data = array('uid' => $this->uid, 'mobile' => $mobile, 'send_time' => $time, 'code' => $code); 
-		#$rs = $mcModel -> insert($data);
-		#if ($rs) {
-		#	Response::displayJson(Response::E_SUCCESS, NULL);
-		#}
+		if ($rs)
+			Response::displayJson(Response::E_SUCCESS, NULL);
+
+		Response::displayJson(Response::E_FAILURE, NULL);
 	}
 	
 	public function checkMobileVerifyCodeAction()
 	{
-		$code = $this->getRequest()->getPost('code', false);
-		if (!$code)
+		$uid = $this->checkLogin();
+		$code = $this->getRequest()->getPost('code', 708077);
+		$mobile = $this->getRequest()->getPost('mobile', 13718188699);
+
+		if (!$code || !$mobile)
 			Response::displayJson(Response::E_PARAM, NULL);
 
-		if ($code == $_SESSION['code']) {
+		$mcModel = new MobileVerifyCodeModel();
+		$vc = $mcModel->scalar("id, send_time", "uid={$uid} and mobile='{$mobile}' and code=$code and status=0", "id desc");
+		if (!$vc) Response::displayJson(Response::E_SMS_ERROR, NULL);
+		if (time() - $vc['send_time'] > 600) Response::displayJson(Response::E_SMS_EXPIRED, NULL);
+		
+		$mcModel->update($vc['id'], array('status'=>1));
+
+		$userModel = new UserModel();
+		$rs = $userModel -> update($uid, array('mobile'=>$mobile));
+		if ($rs) 
 			Response::displayJson(Response::E_SUCCESS, NULL);
-		}
 
 		Response::displayJson(Response::E_FAILURE, NULL);
 	}
@@ -171,43 +188,89 @@ class ApiController extends Yaf_Controller_Abstract {
 
 	public function addressAction()
 	{
-		$proviceId = $this->getRequest()->getPost('provice_id', false);
-		$cityId = $this->getRequest()->getPost('city_id', false);
-		$areaId = $this->getRequest()->getPost('area_id', false);
-		$address = $this->getRequest()->getPost('address', false);
-		$name = $this->getRequest()->getPost('name', false);
-		$telephone = $this->getRequest()->getPost('telephone', false);
+		$uid = $this->checkLogin();
+		if ($this->getRequest()->getMethod() == 'POST') {
+			$proviceId = $this->getRequest()->getPost('provice_id', false);
+			$cityId = $this->getRequest()->getPost('city_id', false);
+			$areaId = $this->getRequest()->getPost('area_id', false);
+			$address = $this->getRequest()->getPost('address', false);
+			$name = $this->getRequest()->getPost('name', false);
+			$telephone = $this->getRequest()->getPost('telephone', false);
 	
-		$data = array(
-			'uid' => $uid,
-			'provice_id' => $proviceId,
-			'city_id' => $cityId,
-			'area_id' => $areaId,
-			'address' => $address,
-			'name' => $name,
-			'telphone' => $telephone,
-		);
-
-		$addressModel = new AddressModel();
-		$id = $addressModel->insert($data);
-		if ($id) 
-			Response::displayJson(Response::E_SUCCESS, NULL);
-
-		Response::displayJson(Response::E_FAILURE, NULL);
+			$data = array(
+				'uid' => $uid,
+				'provice_id' => $proviceId,
+				'city_id' => $cityId,
+				'area_id' => $areaId,
+				'address' => $address,
+				'name' => $name,
+				'telphone' => $telephone,
+			);
+	
+			$addressModel = new AddressModel();
+			$id = $addressModel->insert($data);
+			if ($id) { 
+				Response::displayJson(Response::E_SUCCESS, NULL);
+			} else {
+				Response::displayJson(Response::E_FAILURE, NULL);
+			}
+		} else {
+			$addressModel = new AddressModel();
+			$list = $addressModel->getLimit("province_id, city_id, area_id, address, name, telephone", "uid={$uid}", "id asc", 1, 1);
+			Response::displayJson(Response::E_SUCCESS, NULL, $list);
+		}
 	}
 
 
 	public function waitingPayAction()
 	{
+		$uid = $this->checkLogin();
+		$page = (int)$this->getRequest()->getQuery('page', 1);
+		$orderModel = new OrderModel();
+		$orderBy = "id desc";
+		$where = "uid={$uid} and pay_status=0 and type=0";
+		$orders = $orderModel->getLimit("good_id,address_id,order_number,pay_price,fee", $where, $orderBy, $page, self::PAGESIZE);
+		if (!$orders) Response::displayJson(Response::E_SUCCESS, NULL);
+
+		$gids = $aids = array();
+		foreach ($orders as $o) {
+			$gids[] = $o['good_id'];;
+			$aids[] = $o['address_id'];;
+		}
+
+		$goodModel = new GoodModel();
+		$in = implode(',', $gids);
+		$goods = $goodModel -> getAll("id, author, title, pic, last_price, start_price", "id in ({$in})", "id asc");
+		$goods = ImageModel::fullGoodsUrl($goods);
+
+		$addressModel = new AddressModel();
+		$in = implode(',', $aids);
+		$addresses = $addressModel -> getAll("id, province_id, city_id, area_id, address, name, telephone", "id in ({$in})", "id asc");
+
+	
+		foreach ($orders as &$o) {
+			$address = array();
+			foreach ($addresses as $a) {
+				if ($a['id'] == $o['address_id']) $address = $a;
+			}
+			$good = array();
+			foreach ($goods as $g) {
+				if ($g['id'] == $o['good_id']) $good = $g;
+			}
+
+			$o = array_merge($address, $good, $o);	
+		}
+		
+
+		Response::displayJson(Response::E_SUCCESS, NULL, $orders);
 	}
 
 	public function myPaiAction()
 	{
-		$uid = $this->getUid();
-		$pagesize = 15;
+		$uid = $this->checkLogin();
 		$status = (int)$this->getRequest()->getQuery('status', 0);
 		$page = (int)$this->getRequest()->getQuery('page', 1);
-		$begin = ($page-1) * $pagesize;
+		$begin = ($page-1) * self::PAGESIZE;
 
 		$model = new GoodModel();
 		$orderBy = "order by o.offer_time desc limit {$begin}, {$pagesize}";
@@ -248,6 +311,30 @@ class ApiController extends Yaf_Controller_Abstract {
 		Response::displayJson(Response::E_SUCCESS, NULL, $list);
 	}
 
+	public function userinfoAction()
+	{
+		$uid = $this->checkLogin();
+		$model = new UserModel();
+		$user = $model -> getRow($uid, "id,nick,pic,sex,mobile");
+		Response::displayJson(Response::E_SUCCESS, NULL, $user);
+	}
+
+	public function createOrderAction()
+	{
+		$uid = $this->checkLogin();
+		$type  = (int)$this->getRequest()->getPost('type', -1);
+		$orderModel = new OrderModel();
+
+		if ($type === 0 ) {
+			$goodId = (int)$this->getRequest()->getPost('good_id', 0);
+			exit("unsupport");
+		} else if ($type === 1) { 
+			$orderNumber = date("YmdHis") . "1" . rand(100-999);
+			$order = array('uid' => $uid, 'type' => 1, 'pay_price' => 200, 'order_number'=>$orderNumber); 
+			$id = $orderModel -> insert($order);
+		}
+
+	}
+
 }
-?>
 

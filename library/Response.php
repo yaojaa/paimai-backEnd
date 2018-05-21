@@ -10,6 +10,8 @@ class Response
 	const E_USER_OR_PWD = 4001;
 	const E_USER_NO_LOGIN = 4002;
 	const E_USER_MOBILE_CODE = 4003;
+	const E_SMS_ERROR = 4004;
+	const E_SMS_EXPIRED = 4005;
 	
 	
 	public static $errors = array(
@@ -26,6 +28,8 @@ class Response
 		self::E_USER_OR_PWD => '用户名或密码错误',
 		self::E_USER_NO_LOGIN=> '未登录',
 		self::E_USER_MOBILE_CODE => '验证码发送失败',
+		self::E_SMS_ERROR => '验证码错误',
+		self::E_SMS_EXPIRED => '验证码过期',
 	);
 
 	public static function getError($errno)
