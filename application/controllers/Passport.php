@@ -47,8 +47,11 @@ class PassportController extends Yaf_Controller_Abstract
 
 		$userModel = new UserModel();
 		$user = $userModel->scalar("id", "openid='$openId'", "id desc");
+		// has logined
 		if ($user) goto U_LOGIN; 
+
 		$userInfo = $this->_wxUserInfo($accessToken, $openId);
+
 		if (isset($userInfo['openid'])) {
 			$user = array(
 				'openid'=>$userInfo['openid'],
@@ -60,35 +63,15 @@ class PassportController extends Yaf_Controller_Abstract
 				'create_time' => $currtime,
 			);
 			$uid = $userModel->insert($user);
-			if ($uid) {
-				$user['uid'] = $uid;
-			} else {
-				exit("Create User Fail!");
+			if (!$uid) {
+				Response::displayJson(Response::E_MYSQL, NULL);
 			}
+			$user['id'] = $uid;
 		} else {
-			exit("Request wx fail!");
+			Response::displayJson(Response::E_WX_REQ, NULL);
 		}
 U_LOGIN:
-
-
-		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "cookie");	
-		$domain = $ini->get("domain");
-		$expire = $ini->get("expire");
-		$login = new CookieLogin($expire, '/', $domain);
-		$login->setUid($user['id']);
-		$login->setTime();
-		$login->setToken();
-
-	
-		//CookieToken::$expire = $currtime + $expire;
-		//CookieToken::$path = '/';
-		//CookieToken::$domain = ".".$domain;
-		//$c = new CookieToken($this->getRequest()->getQuery('token', false));
-		//$c->login($user['id'], $user['openid'], $currtime);
-		$js = "<script language='javascript' type='text/javascript'>window.location.href='http://local.apa7.cc:8080/author';</script>";
-		exit($js);
-		header("Location:/author");
-		exit;
+		Response::displayJson(Response::E_SUCCESS, NULL, $user);
 	}
 
 	private function _wxUserInfo($accessToken, $openId)

@@ -68,9 +68,25 @@ class ApiController extends Yaf_Controller_Abstract {
 		$id = (int)$this->getRequest()->getQuery('id', 0);
 		$goodModel = new GoodModel();
 		$good = $goodModel->getRow($id, "*");
-		if (!$good) 
+
+		if (!$good || ($good['status'] != 1 && $good['status'] != 2)) 
 			Response::displayJson(Response::E_PARAM, NULL);
 
+	
+		$currtime = time();
+		$good['pai_status'] = 2;	
+		if ($good['status'] == 1) {
+			if ($currtime < $good['start_time']) {
+				$good['pai_status'] = 1;
+				$good['remain_time'] = $good['start_time'] - $currtime;
+			} else if ($currtime < $good['end_time']) {
+				$good['pai_status'] = 0;
+				$good['remain_time'] = $good['end_time'] - $currtime;
+			}
+		}
+
+		$good['start_time_fmt'] = date("Y-m-d H:i:s", $good['start_time']);
+		$good['end_time_fmt'] = date("Y-m-d H:i:s", $good['end_time']);
 		$good['pic_url'] = ImageModel::getUrl($good['pic']);
 
 		Response::displayJson(Response::E_SUCCESS, NULL, $good);
@@ -226,6 +242,7 @@ class ApiController extends Yaf_Controller_Abstract {
 	{
 		$uid = $this->checkLogin();
 		$page = (int)$this->getRequest()->getQuery('page', 1);
+		$page = $page < 1 ? 1 : $page;
 		$orderModel = new OrderModel();
 		$orderBy = "id desc";
 		$where = "uid={$uid} and pay_status=0 and type=0";
@@ -240,7 +257,7 @@ class ApiController extends Yaf_Controller_Abstract {
 
 		$goodModel = new GoodModel();
 		$in = implode(',', $gids);
-		$goods = $goodModel -> getAll("id, author, title, pic, last_price, start_price", "id in ({$in})", "id asc");
+		$goods = $goodModel -> getAll("id, category, author, title, pic, last_price, start_price", "id in ({$in})", "id asc");
 		$goods = ImageModel::fullGoodsUrl($goods);
 
 		$addressModel = new AddressModel();
@@ -258,7 +275,8 @@ class ApiController extends Yaf_Controller_Abstract {
 				if ($g['id'] == $o['good_id']) $good = $g;
 			}
 
-			$o = array_merge($address, $good, $o);	
+			$o = array_merge($good, $o);	
+			$o['address'] = $address;
 		}
 		
 
@@ -317,23 +335,6 @@ class ApiController extends Yaf_Controller_Abstract {
 		$model = new UserModel();
 		$user = $model -> getRow($uid, "id,nick,pic,sex,mobile");
 		Response::displayJson(Response::E_SUCCESS, NULL, $user);
-	}
-
-	public function createOrderAction()
-	{
-		$uid = $this->checkLogin();
-		$type  = (int)$this->getRequest()->getPost('type', -1);
-		$orderModel = new OrderModel();
-
-		if ($type === 0 ) {
-			$goodId = (int)$this->getRequest()->getPost('good_id', 0);
-			exit("unsupport");
-		} else if ($type === 1) { 
-			$orderNumber = date("YmdHis") . "1" . rand(100-999);
-			$order = array('uid' => $uid, 'type' => 1, 'pay_price' => 200, 'order_number'=>$orderNumber); 
-			$id = $orderModel -> insert($order);
-		}
-
 	}
 
 }
