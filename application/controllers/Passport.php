@@ -7,20 +7,69 @@
 class PassportController extends Yaf_Controller_Abstract 
 {
 
+	public static function get3rdSession($len)
+	{
+		$fp = fopen('/dev/urandom','rb');
+		$result = '';
+
+		if ($fp !== FALSE) {
+			$result .= fread($fp, $len);
+			fclose($fp);
+		} 
+
+		$result = base64_encode($result);
+		$result = strtr($result, '+/', '-_');
+		return substr($result, 0, $len);
+	}
+
 	// wx auth
 	public function wxLoginAction()
 	{
-		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/wechat.ini", "product");	
-		$authUrl = $ini->get('auth_url');
+		//获取code 拼接成url
+		$code = $this->getRequest()->getPost('code');
+		$nick = $this->getRequest()->getPost('nickName', '');
+		$sex = (int)$this->getRequest()->getPost('gender', 0);
+		$pic = $this->getRequest()->getPost('avatarUrl', '');
+		$currtime = time();
+
+		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/wechat.ini", "miniprogram");	
 		$appid = $ini->get('appid'); 
-		$redirectUri = $ini->get('redirect_uri'); 
-		$url = sprintf($authUrl, $appid, $redirectUri);
-		header("Location:{$url}");
-		exit;
+		$appsecret = $ini->get('appsecret');
+		$apiUrl = $ini->get('sns_jscode2session_url');
+		$url = sprintf($apiUrl, $appid, $appsecret, $code);
+		$session = json_decode(file_get_contents($url), TRUE);
+
+		if (!isset($session['openid'])) {
+			Response::displayJson(Response::E_WX_REQ, NULL, $session);
+		}
+
+		$openId = $session['openid'];
+		$sessKey = $session['session_key'];
+		$userModel = new UserModel();
+		$user = $userModel->scalar("id", "openid = '{$openId}'", "id desc");
+		if (!$user) {
+			$user = array(
+				'openid' => $openId,
+				'nick' => $nick,
+				'pic' => $pic,
+				'sex' => $sex,
+				'create_time' => $currtime,
+			);
+			$id = $userModel -> insert($user);
+			if (!$id) Response::displayJson(Response::E_MYSQL, NULL);
+		}
+	
+		$rd3session = self::get3rdSession(32);
+		$session = array('3rd_session'=>$rd3session, 'openid'=>$openId, 'session_key'=>$sessKey);
+		$sessMysqlModel = new SessionMysqlModel();	
+		$rs = $sessMysqlModel -> insert($session);
+		if (!$rs) Response::displayJson(Response::E_MYSQL, NULL);
+
+		Response::displayJson(Response::E_SUCCESS, NULL, array('3rd_session'=>$rd3session));
 	}
 
 	// wx callback
-	public function wxcallbackAction()
+	public function _wxcallbackAction()
 	{
 		//获取code 拼接成url
 		$code = $this->getRequest()->getQuery('code');

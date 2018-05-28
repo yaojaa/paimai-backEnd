@@ -8,6 +8,7 @@ class Response
 	const E_NO_PIC = 3002;
 	const E_NO_OBJ = 3003;
 	const E_PRICE_ILL = 3004;
+	const E_SECURITY_DEPOSIT = 3005;
 	const E_USER_OR_PWD = 4001;
 	const E_USER_NO_LOGIN = 4002;
 	const E_USER_MOBILE_CODE = 4003;
@@ -27,6 +28,7 @@ class Response
 		self::E_NO_PIC => '没有图片上传',
 		self::E_NO_OBJ => '商品不存在',
 		self::E_PRICE_ILL => '价格不合理 ',
+		self::E_SECURITY_DEPOSIT => '保证金不足',
 		#4000
 		self::E_USER_OR_PWD => '用户名或密码错误',
 		self::E_USER_NO_LOGIN=> '未登录',

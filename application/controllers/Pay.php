@@ -1,24 +1,6 @@
 <?php
-class PayController extends Yaf_Controller_Abstract 
+class PayController extends BaseController 
 {
-	public function getUid()
-	{
-		$uid = $this->getRequest()->getQuery('uid', false);
-		if ($uid) return $uid;
-		$c = new CookieLogin();
-		$this->uid = $c ->getUid();
-		return $this->uid;
-	}
-
-
-	public function checkLogin()
-	{
-		$uid = $this->getUid();
-		if (!$uid) {
-			Response::displayJson(Response::E_USER_NO_LOGIN, NULL);
-		}
-		return $uid;
-	}
 
     public static function getNonceStr($length = 32)
     {

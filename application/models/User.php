@@ -8,4 +8,12 @@ class UserModel extends BaseModel
 	public function prepareData($parameters)
 	{
 	}
+
+
+	public function getUid($openId)
+	{
+		$user = $this->scalar("id", "openid='{$openId}'");
+		if ($user) return $row['id'];
+		return false;
+	}
 }

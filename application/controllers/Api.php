@@ -1,29 +1,10 @@
 <?php
 header("Access-Control-Allow-Origin: *"); 
 
-class ApiController extends Yaf_Controller_Abstract {
+class ApiController extends BaseController 
+{
 
 	const PAGESIZE = 15;
-	private $uid = 0;
-
-	public function getUid()
-	{
-		$uid = $this->getRequest()->getQuery('uid', false);
-		if ($uid) return $uid;
-		$c = new CookieLogin();
-		$this->uid = $c ->getUid();
-		return $this->uid;
-	}
-
-
-	public function checkLogin()
-	{
-		$uid = $this->getUid();
-		if (!$uid) {
-			Response::displayJson(Response::E_USER_NO_LOGIN, NULL);
-		}
-		return $uid;
-	}
 
     public function indexAction() {
 		exit("Welcome!");
@@ -100,35 +81,44 @@ class ApiController extends Yaf_Controller_Abstract {
 	 */
 	public function setGoodOfferAction()
 	{
-		$time = time();
+		$uid = $this->checkLogin();
 		$id = (int)$this->getRequest()->getPost('id', 0);
 		$price = (int)$this->getRequest()->getPost('price', 0);
-		if ($id <= 0 || $price <= 0)
-			Response::displayJson(Response::E_PARAM, NULL);
+		$time = time();
 
-		# check good 
+		# check good exists
 		$goodModel = new GoodModel();
-		$good = $goodModel->getRow($id, "start_price,incr_price,last_price,last_uid");
+		$good = $goodModel->getRow($id, "security_deposit,start_price,incr_price,last_price,last_uid");
 		if (!$good) Response::displayJson(Response::E_NO_OBJ);
 
+		# security_deposit
+		if ($good['security_deposit']) {
+			$userModel = new UserModel();
+			$user = $userModel->getRow($uid, "security_deposit");
+			$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "good");	
+			$securityDeposit = $ini->get('security_deposit');
+			if ($user['security_deposit'] < $securityDeposit) {
+				Response::displayJson(Response::E_SECURITY_DEPOSIT, NULL, array('security_deposit'=>$securityDeposit));
+			}
+			//if ($user['security_deposit'] < $good['security_deposit']) {
+			//	Response::displayJson(Response::E_SECURITY_DEPOSIT, NULL, array('security_deposit'=>$good['security_deposit']));
+			//}
+		}
+
 		# check offer
-		if (!$good['last_uid']) {
-			if ($price != $good['start_price'] &&  $price < $good['start_price'] + $good['incr_price']) {
-				Response::displayJson(Response::E_NO_OBJ, NULL, $good['start_price']);
-			}
-		} else { 
-			if ($price < $good['last_price'] + $good['incr_price']) {
-				Response::displayJson(Response::E_NO_OBJ, NULL, $good['last_price']);
-			}
+		$startPrice = $good['last_price'] ? $good['last_price'] + $good['incr_price'] : $good['start_price'];
+		if ($price <= $startPrice) {
+			Response::displayJson(Response::E_PRICE_ILL, NULL, array('not_smaller_than'=>$startPrice));
 		}
 
 		$offerModel = new OfferModel();
-		$data = array('good_id'=>$id, 'offer_time' => $time, 'uid' => $this->getUid(), 'price' => $price);
+		$data = array('good_id'=>$id, 'offer_time' => $time, 'uid' => $uid, 'price' => $price);
 		$rs = $offerModel -> insert($data);	
+		if (!$rs) Response::displayJson(Response::E_MYSQL);
 
-		if (!$rs) Response::displayJson(Response::E_FAILURE);
 		$rs = $goodModel->update($id, array('last_uid'=>$this->getUid(), 'last_price'=>$price, 'last_time'=>$time));
-		if (!$rs) Response::displayJson(Response::E_FAILURE);
+		if (!$rs) Response::displayJson(Response::E_MYSQL);
+
 		Response::displayJson(Response::E_SUCCESS);
 	}
 
