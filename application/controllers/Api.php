@@ -134,9 +134,9 @@ class ApiController extends BaseController
 		
 		$userModel = new UserModel();
 		foreach ($list as &$l) {
-			$u = $userModel->getRow($l['uid'], "nick,mobile");
+			$u = $userModel->getRow($l['uid'], "nick,pic");
 			$l['u_nick'] = $u['nick']; 
-			$l['u_head_fmt'] = $u['mobile'];
+			$l['u_head_fmt'] = $u['pic'];
 			$l['offer_time_fmt'] = date("Y-m-d H:i:s", $l['offer_time']);
 		}
 		unset($l);
@@ -195,35 +195,74 @@ class ApiController extends BaseController
 	public function addressAction()
 	{
 		$uid = $this->checkLogin();
-		if ($this->getRequest()->getMethod() == 'POST') {
-			$proviceId = $this->getRequest()->getPost('provice_id', false);
-			$cityId = $this->getRequest()->getPost('city_id', false);
-			$areaId = $this->getRequest()->getPost('area_id', false);
-			$address = $this->getRequest()->getPost('address', false);
-			$name = $this->getRequest()->getPost('name', false);
-			$telephone = $this->getRequest()->getPost('telephone', false);
-	
-			$data = array(
-				'uid' => $uid,
-				'provice_id' => $proviceId,
-				'city_id' => $cityId,
-				'area_id' => $areaId,
-				'address' => $address,
-				'name' => $name,
-				'telphone' => $telephone,
-			);
-	
+		if ($this->getRequest()->getMethod() != 'POST') {
 			$addressModel = new AddressModel();
-			$id = $addressModel->insert($data);
-			if ($id) { 
-				Response::displayJson(Response::E_SUCCESS, NULL);
-			} else {
-				Response::displayJson(Response::E_FAILURE, NULL);
-			}
-		} else {
-			$addressModel = new AddressModel();
-			$list = $addressModel->getLimit("province_id, city_id, area_id, address, name, telephone", "uid={$uid}", "id asc", 1, 1);
+			$list = $addressModel->getLimit("province_id, city_id, area_id, address, name, telephone", "uid={$uid}", "id desc", 1, 1);
 			Response::displayJson(Response::E_SUCCESS, NULL, $list);
+		}
+
+		$provinceId = $this->getRequest()->getPost('province_id', false);
+		$cityId = $this->getRequest()->getPost('city_id', false);
+		$areaId = $this->getRequest()->getPost('area_id', false);
+		$address = $this->getRequest()->getPost('address', false);
+		$name = $this->getRequest()->getPost('name', false);
+		$telephone = $this->getRequest()->getPost('telephone', false);
+		$orderNumber = $this->getRequest()->getPost('order_number', false);
+
+		if (!$provinceId) {
+			Response::displayJson(Response::E_ADDRESS_PROVINCE,  NULL);
+		}
+
+		if (!$cityId) {
+			Response::displayJson(Response::E_ADDRESS_CITY,  NULL);
+		}
+
+		if (!$areaId) {
+			Response::displayJson(Response::E_ADDRESS_AREA,  NULL);
+		}
+
+		if (!$address) {
+			Response::displayJson(Response::E_ADDRESS_ADDR,  NULL);
+		}
+
+		if (!$name) {
+			Response::displayJson(Response::E_ADDRESS_NAME,  NULL);
+		}
+
+		if (!$telephone) {
+			Response::displayJson(Response::E_ADDRESS_TEL,  NULL);
+		}
+
+		$data = array(
+			'uid' => $uid,
+			'province_id' => $provinceId,
+			'city_id' => $cityId,
+			'area_id' => $areaId,
+			'address' => $address,
+			'name' => $name,
+			'telephone' => $telephone,
+		);
+
+		$addressModel = new AddressModel();
+		$id = $addressModel->insert($data);
+		if ($id) { 
+			if ($orderNumber) {
+				$orderModel = new OrderModel();
+				$order = $orderModel->scalar("id", "order_number='{$orderNumber}'");
+
+				if (!$order) 
+					Response::displayJson(Response::E_PARAM,  NULL);
+
+				$rs = $orderModel->update($order['id'], array('address_id'=>$id));
+				if (!$rs)
+					Response::displayJson(Response::E_MYSQL,  NULL);
+
+			}
+
+
+			Response::displayJson(Response::E_SUCCESS, NULL, array('address_id' => $id));
+		} else {
+			Response::displayJson(Response::E_FAILURE, NULL);
 		}
 	}
 
@@ -278,10 +317,11 @@ class ApiController extends BaseController
 		$uid = $this->checkLogin();
 		$status = (int)$this->getRequest()->getQuery('status', 0);
 		$page = (int)$this->getRequest()->getQuery('page', 1);
+		$page = $page < 1 ? 1 : $page;
 		$begin = ($page-1) * self::PAGESIZE;
 
 		$model = new GoodModel();
-		$orderBy = "order by o.offer_time desc limit {$begin}, {$pagesize}";
+		$orderBy = "order by o.offer_time desc limit {$begin}, " . self::PAGESIZE;
 		$where = "where g.id=o.good_id and o.uid={$uid}";
 
 		if ($status == 0) {
@@ -292,7 +332,7 @@ class ApiController extends BaseController
 			$where .= " and (g.status=2 or g.status=3) and g.last_uid!={$uid}"; 
 		}
 
-		$list = $model->getQuery("select distinct(g.id), author, title, pic, last_uid, last_price, start_price, end_time from tbl_good g, tbl_offer o {$where} {$orderBy}");
+		$list = $model->getQuery("select distinct(g.id), author, title, pic, last_uid, last_price, start_price, end_time, status from tbl_good g, tbl_offer o {$where} {$orderBy}");
 
 		foreach ($list as &$g) {
 			$g['remain_time'] = $g['end_time'] - time();

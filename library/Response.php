@@ -14,6 +14,14 @@ class Response
 	const E_USER_MOBILE_CODE = 4003;
 	const E_SMS_ERROR = 4004;
 	const E_SMS_EXPIRED = 4005;
+
+	const E_ADDRESS_PROVINCE = 4101;
+	const E_ADDRESS_CITY = 4102;
+	const E_ADDRESS_AREA = 4103;
+	const E_ADDRESS_ADDR = 4104;
+	const E_ADDRESS_NAME = 4105;
+	const E_ADDRESS_TEL = 4106;
+
 	const E_WX_REQ = 5001;	
 	
 	
@@ -35,6 +43,14 @@ class Response
 		self::E_USER_MOBILE_CODE => '验证码发送失败',
 		self::E_SMS_ERROR => '验证码错误',
 		self::E_SMS_EXPIRED => '验证码过期',
+
+		self::E_ADDRESS_PROVINCE => '省份不能为空',
+		self::E_ADDRESS_CITY => '城市不能为空',
+		self::E_ADDRESS_AREA => '区县不能为空',
+		self::E_ADDRESS_ADDR => '地址不能为空',
+		self::E_ADDRESS_NAME => '联系人不能为空',
+		self::E_ADDRESS_TEL => '电话不能为空',
+
 		#5000
 		self::E_WX_REQ => '微信请求失败',
 	);

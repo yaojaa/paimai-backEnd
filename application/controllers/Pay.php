@@ -23,7 +23,7 @@ class PayController extends BaseController
 			$goodId = (int)$this->getRequest()->getPost('good_id', -1);
 			exit();
 		} else if ($type === 1) { 
-			$orderNumber = date("YmdHis") . "1" . rand(100-999);
+			$orderNumber = date("YmdHis") . "1" . rand(100, 999);
 			$order = array('uid' => $uid, 'amount' => 200, 'order_number'=>$orderNumber); 
 			$id = $securityDepositModel -> insert($order);
 			if (!$id) 
@@ -43,16 +43,24 @@ class PayController extends BaseController
 			Response::displayJson(Response::E_PARAM, NULL);
 
 		$flag = (int)substr($orderNumber, 14, 1);
+
 		if ($flag === 0) {
 			$orderModel = new OrderModel();
-			$order = $orderModel->scalar("pay_price + fee as amout", "order_number='{$orderNumber}'", "id desc");
+			$order = $orderModel->scalar("(pay_price + fee) * 100 as total_fee", "order_number='{$orderNumber}'", "id desc");
 		} else {
 			$securityDepositModel = new SecurityDepositModel();
-			$order = $securityDepositModel->scalar("amount", "order_number='{$orderNumber}'", "id desc");
+			$order = $securityDepositModel->scalar("amount*100 as total_fee", "order_number='{$orderNumber}'", "id desc");
 		}
 
+		$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
+		if (!$rs) {
+			Response::displayJson(Response::E_WX_REQ, NULL);
+		}
+
+
+
 		$currtime = time();
-		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/wechat.ini", "micro");	
+		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/wechat.ini", "miniprogram");	
 		$appid = $ini->get('appid'); 
 		$key = $ini->get('pay_key');
 
@@ -63,6 +71,7 @@ class PayController extends BaseController
 			'package' => 'prepay_id='.$orderNumber,
 			'signType' => 'MD5',	
 		);
+
 		ksort($data);
 		$query = http_build_query($data)."&key=".$key; 
 		$data['paySign'] =  strtoupper(md5($query));
