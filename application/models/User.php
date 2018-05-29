@@ -12,8 +12,8 @@ class UserModel extends BaseModel
 
 	public function getUid($openId)
 	{
-		$user = $this->scalar("id", "openid='{$openId}'");
-		if ($user) return $row['id'];
+		$user = $this->scalar("id", "openid='{$openId}'", "id desc");
+		if ($user) return $user['id'];
 		return false;
 	}
 }
