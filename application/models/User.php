@@ -16,4 +16,10 @@ class UserModel extends BaseModel
 		if ($user) return $user['id'];
 		return false;
 	}
+
+	public function fmtUserHead(&$user)
+	{
+		$user['pic'] = $user['pic'] ? $user['pic'] : "/static/img/defaut_avatar.png";	
+	}
+
 }

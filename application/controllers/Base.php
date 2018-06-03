@@ -9,7 +9,11 @@ class BaseController extends Yaf_Controller_Abstract {
 		$this->uid = $this->getRequest()->getQuery('uid', 0);
 		if ($this->uid) return $this->uid;
 
-		$rd3session = $this->getRequest()->getQuery('3rd_session', false);
+		if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+			$rd3session = $_SERVER['HTTP_AUTHORIZATION']; 
+		} else {
+			$rd3session = $this->getRequest()->getQuery('3rd_session', false);
+		}
 
 		if ($rd3session) {
 			$sessMysqlModel = new SessionMysqlModel();

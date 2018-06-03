@@ -28,6 +28,7 @@ class PassportController extends Yaf_Controller_Abstract
 		//获取code 拼接成url
 		$code = $this->getRequest()->getPost('code');
 		$nick = $this->getRequest()->getPost('nickName', '');
+		$nick = $nick ? $nick : "HZ_".date("mdHis");
 		$sex = (int)$this->getRequest()->getPost('gender', 0);
 		$pic = $this->getRequest()->getPost('avatarUrl', '');
 		$currtime = time();
@@ -46,17 +47,22 @@ class PassportController extends Yaf_Controller_Abstract
 		$openId = $session['openid'];
 		$sessKey = $session['session_key'];
 		$userModel = new UserModel();
-		$user = $userModel->scalar("id", "openid = '{$openId}'", "id desc");
+		$user = $userModel->scalar("id,pic", "openid = '{$openId}'", "id desc");
+
+		$reginfo = array(
+			'nick' => $nick,
+			'pic' => $pic,
+			'sex' => $sex,
+		);
+
 		if (!$user) {
-			$user = array(
-				'openid' => $openId,
-				'nick' => $nick,
-				'pic' => $pic,
-				'sex' => $sex,
-				'create_time' => $currtime,
-			);
-			$id = $userModel -> insert($user);
+			$reginfo['openid'] = $openId;
+			$reginfo['create_time'] = $currtime;
+			$id = $userModel -> insert($reginfo);
 			if (!$id) Response::displayJson(Response::E_MYSQL, NULL);
+		} else if ($user['pic'] == '') {
+			$rs = $userModel->update($user['id'], $reginfo);	
+			if (false === $rs) Response::displayJson(Response::E_MYSQL, NULL);
 		}
 	
 		$rd3session = self::get3rdSession(32);

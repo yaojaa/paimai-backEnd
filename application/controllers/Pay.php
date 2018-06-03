@@ -51,8 +51,9 @@ class PayController extends BaseController
 			$securityDepositModel = new SecurityDepositModel();
 			$order = $securityDepositModel->scalar("amount*100 as total_fee", "order_number='{$orderNumber}'", "id desc");
 		}
-
-		$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
+		
+		//$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
+		$rs = Wechat::pay($this->openId, $orderNumber, 1);
 		if (!$rs) {
 			Response::displayJson(Response::E_WX_REQ, NULL);
 		}
@@ -64,16 +65,16 @@ class PayController extends BaseController
 		$appid = $ini->get('appid'); 
 		$key = $ini->get('pay_key');
 
+		$nonceStr = self::getNonceStr();
 		$data = array(
 			'appId' => $appid,
 			'timeStamp' => $currtime,
-			'nonceStr' => self::getNonceStr(),
-			'package' => 'prepay_id='.$orderNumber,
+			'nonceStr' => $nonceStr, 
+			'package' => 'prepay_id='.$rs['prepay_id'],
 			'signType' => 'MD5',	
 		);
 
-		ksort($data);
-		$query = http_build_query($data)."&key=".$key; 
+		$query = sprintf("appId=%s&nonceStr=%s&package=prepay_id=%s&signType=%s&timeStamp=%d&key=%s", $appid, $nonceStr, $rs['prepay_id'], 'MD5', $currtime, $key); 
 		$data['paySign'] =  strtoupper(md5($query));
 		$data['order'] = $order;
 		Response::displayJson(Response::E_SUCCESS, NULL, $data);
@@ -107,13 +108,18 @@ class PayController extends BaseController
 	}
 	*/
 
+	/**
+	 * curl -d "status=1&order_number=201805300348131133" http://test.apa7.cc/pay/updateOrder?3rd_session=AGLrj9NRAms0bKI3c_qXTtWKJatDfqld
+	 */
 	public function updateOrderAction()
 	{
+		/*
 		$uid = $this->checkLogin();
-		$orderNumber = (int)$this->getRequest()->getPost('order_number', false);
+		$orderNumber = $this->getRequest()->getPost('order_number', false);
 		$payStatus = (int)$this->getRequest()->getPost('status', 0);
 
 		$flag = substr($orderNumber, 14, 1);
+		$currtime = time();
 
 		if ($flag == '0') {
 			$orderModel = new OrderModel();
@@ -128,32 +134,34 @@ class PayController extends BaseController
 
 			$goodModel = new GoodModel();	
 			$rs = $goodModel->update($order['good_id'], array('status'=> 3));
-			if (!$rs)
+			if (false === $rs)
 				Response::displayJson(Response::E_MYSQL, NULL);
 		} else {
 			$securityDepositModel = new SecurityDepositModel();
-			$where = "uid={$uid} and order_number='{$orderNumber}' and pay_status=0";
-			$order = $securityDepositModel -> scalar("id,pay_status,amount", $where, "id desc");
+			$where = "uid={$uid} and order_number='{$orderNumber}' and pay_time=0";
+			$order = $securityDepositModel -> scalar("id,amount", $where, "id desc");
 			if (!$order)
 				Response::displayJson(Response::E_PARAM, NULL);
 	
-			$rs = $securityDepositModel ->update($order['id'], array('pay_status'=>$payStatus));	
+			$rs = $securityDepositModel ->update($order['id'], array('pay_time'=>$currtime));	
 			if (!$rs)
 				Response::displayJson(Response::E_MYSQL, NULL);
 
 			$userModel = new UserModel();	
-			$rs = $userModel->update($uid, array('balance'=>$order['amout']));
+			$rs = $userModel->update($uid, array('balance'=>$order['amount']));
 			if (!$rs)
 				Response::displayJson(Response::E_MYSQL, NULL);
 		}
 
 		Response::displayJson(Response::E_SUCCESS, NULL);
+		*/
 	}
 
 
 	function wxNotifyAction()
 	{
-		echo 'wx notify url';
+		$notify = new PayNotifyCallBack();
+		$notify->Handle(false);
 		exit;
 	}
 }

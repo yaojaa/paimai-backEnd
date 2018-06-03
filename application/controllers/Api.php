@@ -94,10 +94,11 @@ class ApiController extends BaseController
 		# security_deposit
 		if ($good['security_deposit']) {
 			$userModel = new UserModel();
-			$user = $userModel->getRow($uid, "security_deposit");
+			$user = $userModel->getRow($uid, "balance");
 			$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "good");	
 			$securityDeposit = $ini->get('security_deposit');
-			if ($user['security_deposit'] < $securityDeposit) {
+
+			if ($user['balance'] < $securityDeposit) {
 				Response::displayJson(Response::E_SECURITY_DEPOSIT, NULL, array('security_deposit'=>$securityDeposit));
 			}
 			//if ($user['security_deposit'] < $good['security_deposit']) {
@@ -108,7 +109,7 @@ class ApiController extends BaseController
 		# check offer
 		$startPrice = $good['last_price'] ? $good['last_price'] + $good['incr_price'] : $good['start_price'];
 		if ($price <= $startPrice) {
-			Response::displayJson(Response::E_PRICE_ILL, NULL, array('not_smaller_than'=>$startPrice));
+			Response::displayJson(Response::E_PRICE_ILL, "当前出价不能低于{$startPrice}元", array('not_smaller_than'=>$startPrice));
 		}
 
 		$offerModel = new OfferModel();
@@ -197,17 +198,33 @@ class ApiController extends BaseController
 		$uid = $this->checkLogin();
 		if ($this->getRequest()->getMethod() != 'POST') {
 			$addressModel = new AddressModel();
-			$list = $addressModel->getLimit("province_id, city_id, area_id, address, name, telephone", "uid={$uid}", "id desc", 1, 1);
+			$list = $addressModel->getAll("id, province_id, city_id, area_id, address, name, telephone", "uid={$uid}", "id desc");
+			if ($list) $addressModel->patch($list);
 			Response::displayJson(Response::E_SUCCESS, NULL, $list);
 		}
 
-		$provinceId = $this->getRequest()->getPost('province_id', false);
-		$cityId = $this->getRequest()->getPost('city_id', false);
-		$areaId = $this->getRequest()->getPost('area_id', false);
+		$addressId = (int)$this->getRequest()->getPost('address_id', false);
+		$orderNumber = $this->getRequest()->getPost('order_number', false);
+
+		if ($orderNumber && $addressId) {
+			$orderModel = new OrderModel();
+			$order = $orderModel->scalar("id", "order_number='{$orderNumber}'", "id desc");
+
+			if (!$order) 
+				Response::displayJson(Response::E_PARAM,  NULL);
+
+			$rs = $orderModel->update($order['id'], array('address_id'=>$addressId));
+			if (false === $rs)
+				Response::displayJson(Response::E_MYSQL,  NULL);
+			Response::displayJson(Response::E_SUCCESS);
+		}
+
+		$provinceId = (int)$this->getRequest()->getPost('province_id', false);
+		$cityId = (int)$this->getRequest()->getPost('city_id', false);
+		$areaId = (int)$this->getRequest()->getPost('area_id', false);
 		$address = $this->getRequest()->getPost('address', false);
 		$name = $this->getRequest()->getPost('name', false);
 		$telephone = $this->getRequest()->getPost('telephone', false);
-		$orderNumber = $this->getRequest()->getPost('order_number', false);
 
 		if (!$provinceId) {
 			Response::displayJson(Response::E_ADDRESS_PROVINCE,  NULL);
@@ -246,20 +263,6 @@ class ApiController extends BaseController
 		$addressModel = new AddressModel();
 		$id = $addressModel->insert($data);
 		if ($id) { 
-			if ($orderNumber) {
-				$orderModel = new OrderModel();
-				$order = $orderModel->scalar("id", "order_number='{$orderNumber}'");
-
-				if (!$order) 
-					Response::displayJson(Response::E_PARAM,  NULL);
-
-				$rs = $orderModel->update($order['id'], array('address_id'=>$id));
-				if (!$rs)
-					Response::displayJson(Response::E_MYSQL,  NULL);
-
-			}
-
-
 			Response::displayJson(Response::E_SUCCESS, NULL, array('address_id' => $id));
 		} else {
 			Response::displayJson(Response::E_FAILURE, NULL);
@@ -364,8 +367,44 @@ class ApiController extends BaseController
 		$uid = $this->checkLogin();
 		$model = new UserModel();
 		$user = $model -> getRow($uid, "id,nick,pic,sex,mobile");
+		$model->fmtUserHead($user);
 		Response::displayJson(Response::E_SUCCESS, NULL, $user);
 	}
+
+
+	public function getNewsListAction()
+	{
+		$page = (int)$this->getRequest()->getQuery('page', 0);
+		$page = $page <= 1 ? 1 : $page;
+		$model = new NewsModel();
+		$list = $model->getLimit("id,admin_id,title,pic,source,content,create_time", "1=1", "id desc", $page, self::PAGESIZE);
+		if (!$list)
+			Response::displayJson(Response::E_SUCCESS, NULL, $list);
+
+		foreach ($list as &$r) {
+			$r['create_time_fmt'] = date("Y-m-d H:i:s", $r['create_time']);
+			$r['content_fmt'] = mb_substr($r['content'], 0, 30);
+		}
+			
+		ImageModel::fullNewsUrl($list);
+		Response::displayJson(Response::E_SUCCESS, NULL, $list);
+	}
+
+
+	public function getNewsInfoAction()
+	{
+		$id = (int)$this->getRequest()->getQuery('id', 0);
+		$model = new NewsModel();
+		$news = $model->getRow($id);
+		if (!$news) 
+			Response::displayJson(Response::E_NO_OBJ);
+
+		$news['create_time_fmt'] = date("Y-m-d H:i:s", $news['create_time']);
+		ImageModel::fullNewsUrl($news, 0);
+		Response::displayJson(Response::E_SUCCESS, NULL, $news);
+	}
+
+
 
 }
 

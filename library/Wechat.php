@@ -27,11 +27,10 @@ class Wechat
 		$input->SetTotal_fee($totalFee);
 		$input->SetTime_start(date("YmdHis"));
 		$input->SetTime_expire(date("YmdHis", time() + 86400));
-		$input->SetNotify_url("http://test.apay.cc/pay/wxNotify");
+		$input->SetNotify_url("http://test.apa7.cc/pay/wxNotify");
 		$input->SetTrade_type("JSAPI");
 		$input->SetOpenid($openId);
 		$order = WxPayApi::unifiedOrder($input);
-		var_dump($order);exit;
 		
 		if ($order['return_code'] == 'SUCCESS' && $order['result_code'] == 'SUCCESS') {
 			return $order;	
@@ -42,5 +41,11 @@ class Wechat
 		//$jsApiParameters = $tools->GetJsApiParameters($order);
 		//获取共享收货地址js函数参数
 		//$editAddress = $tools->GetEditAddressParameters();
+	}
+
+
+	public static function query()
+	{
+		//https://api.mch.weixin.qq.com/pay/orderquery
 	}
 }

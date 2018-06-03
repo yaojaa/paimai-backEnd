@@ -189,4 +189,18 @@ abstract class BaseModel
 
     }
 
+	public function incr($id, $data)
+	{
+        $set = "";     
+        foreach( $data as $k=>$v )
+        {
+            $set .= "`{$k}` = `{$k}` + (" . $v . "),";
+        }
+        $set = trim( $set, ',' );
+        $sql = "update {$this->table} set {$set} where `{$this->pk}`='{$id}'";
+		$rs = $this->query($sql);
+		if (false !== $rs) return $this->conn->affected_rows;
+		return false;
+	}
+
 }
