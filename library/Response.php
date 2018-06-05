@@ -69,8 +69,9 @@ class Response
 	public static function displayJson($errno, $msg = NULL, $data = NULL)
 	{
 		$msg = $msg ? $msg : self::$errors[$errno];
-		echo json_encode(array('errno' => $errno, 'message'=>$msg, 'data'=>$data, 'server_timestamp'=>time()));
-		exit;
+		$output = json_encode(array('errno' => $errno, 'message'=>$msg, 'data'=>$data, 'server_timestamp'=>time()));
+		Log::api($_SERVER['REQUEST_URI'], __FILE__, __LINE__, json_encode($_GET) ."\t". json_encode($_POST) ."\t". $output);
+		exit($output);
 	}	
 
 
