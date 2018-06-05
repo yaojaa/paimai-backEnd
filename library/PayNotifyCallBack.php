@@ -53,8 +53,7 @@ class PayNotifyCallBack extends WxPayNotify
 	{
 		$flag = substr($orderNumber, 14, 1);
 		$currtime = time();
-
-		if ($flag == '1') {
+		if ($flag == '0') {
 			$orderModel = new OrderModel();
 			$where = "order_number='{$orderNumber}'";
 			$order = $orderModel -> scalar("id,good_id,pay_price,fee,pay_status", $where, "id desc");

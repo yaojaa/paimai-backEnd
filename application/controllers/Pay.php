@@ -44,13 +44,27 @@ class PayController extends BaseController
 
 		$flag = (int)substr($orderNumber, 14, 1);
 
+		$title = "保证金";
 		if ($flag === 0) {
 			$orderModel = new OrderModel();
-			$order = $orderModel->scalar("(pay_price + fee) * 100 as total_fee", "order_number='{$orderNumber}'", "id desc");
+			$order = $orderModel->scalar("good_id, (pay_price + fee) * 100 as total_fee", "order_number='{$orderNumber}'", "id desc");
+			if ($order) {
+				$goodModel = new GoodModel();
+				$good = $goodModel->getRow($order['good_id'], "title");
+				if ($good) {
+					$title = $good['title'];
+				} else {
+					Response::displayJson(Response::E_NO_OBJ, NULL);
+				}
+						
+			}
 		} else {
 			$securityDepositModel = new SecurityDepositModel();
 			$order = $securityDepositModel->scalar("amount*100 as total_fee", "order_number='{$orderNumber}'", "id desc");
 		}
+
+		if (!$order)
+			Response::displayJson(Response::E_NO_OBJ, NULL);
 		
 		//$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
 		$rs = Wechat::pay($this->openId, $orderNumber, 1);

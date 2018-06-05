@@ -57,6 +57,8 @@ class WxPayApi
 		//签名
 		$inputObj->SetSign();
 		$xml = $inputObj->ToXml();
+		$msg = sprintf("%s\t%s\t%s:%d\t%s\n", date("Y-m-d H:i:s"), "OrderNumber:".$inputObj->GetOut_trade_no(), __FILE__, __LINE__, $xml);
+		error_log($msg, 3, "/data/logs/wechat/".date("Ymd").".log");
 		
 		$startTimeStamp = self::getMillisecond();//请求开始时间
 		$response = self::postXmlCurl($xml, $url, false, $timeOut);
@@ -412,6 +414,7 @@ class WxPayApi
 	{
 		//获取通知的数据
 		$xml = file_get_contents('php://input');
+		Log::wxNotify("NotifyXML", __FILE__, __LINE__,  str_replace(PHP_EOL, '', $xml));
 		//如果返回成功则验证签名
 		try {
 			$result = WxPayResults::Init($xml);
