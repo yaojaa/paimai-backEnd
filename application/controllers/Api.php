@@ -34,6 +34,8 @@ class ApiController extends BaseController
 		$t = time();
 		$authorModel = new AuthorModel();
 		foreach ($list as &$r) {
+			$r['start_time_fmt'] = date("Y-m-d H:i:s", $r['start_time']);
+			$r['end_time_fmt'] = date("Y-m-d H:i:s", $r['end_time']);
 			$r['pai_status'] = $status;
 			if ($status == 1) $r['remain_time'] = $r['start_time'] -  $t;
 		}
@@ -50,7 +52,7 @@ class ApiController extends BaseController
 		$goodModel = new GoodModel();
 		$good = $goodModel->getRow($id, "*");
 
-		if (!$good || ($good['status'] != 1 && $good['status'] != 2)) 
+		if (!$good || ($good['status'] != 1 && $good['status'] != 2 && $good['status'] != 3)) 
 			Response::displayJson(Response::E_PARAM, NULL);
 
 	
@@ -84,19 +86,31 @@ class ApiController extends BaseController
 		$uid = $this->checkLogin();
 		$id = (int)$this->getRequest()->getPost('id', 0);
 		$price = (int)$this->getRequest()->getPost('price', 0);
-		$time = time();
+		$currtime = time();
+
+		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "good");	
+		$securityDeposit = $ini->get('security_deposit');
+		$delaySeconds = $ini->get('pai_delay_seconds');
 
 		# check good exists
 		$goodModel = new GoodModel();
-		$good = $goodModel->getRow($id, "security_deposit,start_price,incr_price,last_price,last_uid");
+		$good = $goodModel->getRow($id, "start_time,end_time,security_deposit,start_price,incr_price,last_price,last_uid,last_time,status");
 		if (!$good) Response::displayJson(Response::E_NO_OBJ);
+
+		# check good status
+		if ($good['status'] != GoodModel::GOOD_STATUS_ONLINE) {
+			Response::displayJson(Response::E_GOOD_PAI_STOP);
+		}
+
+		# check pai end time
+		if ($good['end_time'] < $currtime && $currtime > $good['last_time'] + $delaySeconds) {
+			Response::displayJson(Response::E_GOOD_PAI_STOP);
+		}
 
 		# security_deposit
 		if ($good['security_deposit']) {
 			$userModel = new UserModel();
 			$user = $userModel->getRow($uid, "balance");
-			$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "good");	
-			$securityDeposit = $ini->get('security_deposit');
 
 			if ($user['balance'] < $securityDeposit) {
 				Response::displayJson(Response::E_SECURITY_DEPOSIT, NULL, array('security_deposit'=>$securityDeposit));
@@ -108,17 +122,23 @@ class ApiController extends BaseController
 
 		# check offer
 		$startPrice = $good['last_price'] ? $good['last_price'] + $good['incr_price'] : $good['start_price'];
-		if ($price <= $startPrice) {
+		if ($price < $startPrice) {
 			Response::displayJson(Response::E_PRICE_ILL, "当前出价不能低于{$startPrice}元", array('not_smaller_than'=>$startPrice));
 		}
 
 		$offerModel = new OfferModel();
-		$data = array('good_id'=>$id, 'offer_time' => $time, 'uid' => $uid, 'price' => $price);
+		$data = array('good_id'=>$id, 'offer_time' => $currtime, 'uid' => $uid, 'price' => $price);
 		$rs = $offerModel -> insert($data);	
 		if (!$rs) Response::displayJson(Response::E_MYSQL);
 
-		$rs = $goodModel->update($id, array('last_uid'=>$this->getUid(), 'last_price'=>$price, 'last_time'=>$time));
+		$rs = $goodModel->update($id, array('last_uid'=>$this->getUid(), 'last_price'=>$price, 'last_time'=>$currtime));
 		if (!$rs) Response::displayJson(Response::E_MYSQL);
+
+		
+		if ($currtime + $delaySeconds > $good['end_time']) {
+			Response::displayJson(Response::E_SUCCESS, NULL, array("end_time_fmt"=> date("Y-m-d H:i:s", $currtime + $delaySeconds)));
+		}
+			
 
 		Response::displayJson(Response::E_SUCCESS);
 	}

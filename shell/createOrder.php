@@ -22,7 +22,7 @@ function main()
 
 	foreach ($list as $k=>$g) {
 		//Part 1
-		if ($g['last_time'] > $g['end_time'] + $paiDelaySeconds) {
+		if ($g['last_time'] + $paiDelaySeconds > $currtime) {
 			continue;
 		}
 

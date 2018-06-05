@@ -22,6 +22,9 @@ class Response
 	const E_ADDRESS_NAME = 4105;
 	const E_ADDRESS_TEL = 4106;
 
+	const E_GOOD_PAI_STOP = 4201;
+
+
 	const E_WX_REQ = 5001;	
 	
 	
@@ -50,6 +53,9 @@ class Response
 		self::E_ADDRESS_ADDR => '地址不能为空',
 		self::E_ADDRESS_NAME => '联系人不能为空',
 		self::E_ADDRESS_TEL => '电话不能为空',
+
+		#4200
+		self::E_GOOD_PAI_STOP => '商品已停拍',
 
 		#5000
 		self::E_WX_REQ => '微信请求失败',

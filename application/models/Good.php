@@ -2,6 +2,10 @@
 
 class GoodModel extends BaseModel
 {
+	const GOOD_STATUS_ONLINE = 1;
+	const GOOD_STATUS_STOP = 2;
+	const GOOD_STATUS_PAID = 3;
+
 	protected $db = 'db_pai';
 	protected $pk = 'id';
 	protected $table = 'tbl_good';

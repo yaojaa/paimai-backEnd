@@ -24,7 +24,7 @@ class PayController extends BaseController
 			exit();
 		} else if ($type === 1) { 
 			$orderNumber = date("YmdHis") . "1" . rand(100, 999);
-			$order = array('uid' => $uid, 'amount' => 200, 'order_number'=>$orderNumber); 
+			$order = array('uid' => $uid, 'amount' => 1, 'order_number'=>$orderNumber); 
 			$id = $securityDepositModel -> insert($order);
 			if (!$id) 
 				Response::displayJson(Response::E_MYSQL, NULL);
