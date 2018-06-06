@@ -13,7 +13,6 @@ class ApiController extends BaseController
 
 	public function getGoodListAction()
 	{
-		$pagesize = 3;
 		$status = (int)$this->getRequest()->getQuery('status', 0);
 		$page = (int)$this->getRequest()->getQuery('page', 0);
 		$t = time();
@@ -30,7 +29,7 @@ class ApiController extends BaseController
 			$where .= " and 1=0";
 		}
 
-		$list = $goodModel->getLimit("id,author,title,pic,start_price,last_price,start_time,end_time", $where, "seqid asc, id desc", $page, $pagesize);
+		$list = $goodModel->getLimit("id,author,title,pic,start_price,last_price,start_time,end_time", $where, "seqid asc, id desc", $page, self::PAGESIZE);
 		$t = time();
 		$authorModel = new AuthorModel();
 		foreach ($list as &$r) {
@@ -103,7 +102,7 @@ class ApiController extends BaseController
 		}
 
 		# check pai end time
-		if ($good['end_time'] < $currtime && $currtime > $good['last_time'] + $delaySeconds) {
+		if ($good['end_time'] < $currtime) {
 			Response::displayJson(Response::E_GOOD_PAI_STOP);
 		}
 
@@ -132,10 +131,12 @@ class ApiController extends BaseController
 		if (!$rs) Response::displayJson(Response::E_MYSQL);
 
 		$rs = $goodModel->update($id, array('last_uid'=>$this->getUid(), 'last_price'=>$price, 'last_time'=>$currtime));
-		if (!$rs) Response::displayJson(Response::E_MYSQL);
+		if (false === $rs) Response::displayJson(Response::E_MYSQL);
 
-		
+		// delay end time	
 		if ($currtime + $delaySeconds > $good['end_time']) {
+			$rs = $goodModel->update($good['id'], array('end_time' => $currtime + $delaySeconds));
+			if (false === $rs) Response::displayJson(Response::E_MYSQL);
 			Response::displayJson(Response::E_SUCCESS, NULL, array("end_time_fmt"=> date("Y-m-d H:i:s", $currtime + $delaySeconds)));
 		}
 			
@@ -146,11 +147,10 @@ class ApiController extends BaseController
 
 	public function getGoodOfferListAction()
 	{
-		$pagesize = 30;
 		$page = (int)$this->getRequest()->getQuery('page', 0);
 		$id = (int)$this->getRequest()->getQuery('id', 0);
 		$offerModel = new OfferModel();
-		$list = $offerModel -> getLimit("id,uid,offer_time,price", "good_id={$id}", "id desc", $page, $pagesize);
+		$list = $offerModel -> getLimit("id,uid,offer_time,price", "good_id={$id}", "id desc", $page, self::PAGESIZE);
 		if (!$list) Response::displayJson(Response::E_SUCCESS);
 		
 		$userModel = new UserModel();
@@ -161,6 +161,11 @@ class ApiController extends BaseController
 			$l['offer_time_fmt'] = date("Y-m-d H:i:s", $l['offer_time']);
 		}
 		unset($l);
+
+
+		$goodModel = new GoodModel();
+		$g = $goodModel -> getRow($id, "end_time");
+		$list[0]['end_time_fmt'] = date("Y-m-d H:i:s", $g['end_time']);
 
 		Response::displayJson(Response::E_SUCCESS, NULL, $list);
 	}

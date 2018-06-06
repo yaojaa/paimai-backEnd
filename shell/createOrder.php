@@ -12,7 +12,7 @@ $app->execute("main");
 function main()
 {
 	$ini = new Yaf_Config_Ini(CONFIG_PATH . "/application.ini", "good");
-	$paiDelaySeconds = $ini->get('pai_delay_seconds');
+	//$paiDelaySeconds = $ini->get('pai_delay_seconds');
 	$serviceFeeRate = $ini->get('service_fee_rate');
 
 	$currtime = time();
@@ -22,7 +22,8 @@ function main()
 
 	foreach ($list as $k=>$g) {
 		//Part 1
-		if ($g['last_time'] + $paiDelaySeconds > $currtime) {
+		//if ($g['last_time'] + $paiDelaySeconds > $currtime) {
+		if ($g['last_time'] > $currtime) {
 			continue;
 		}
 
@@ -47,6 +48,5 @@ function main()
 		$rs = $goodModel->update($g['id'], array("status" => 2));
 		$order['good_status'] = 2;
 		Log::createOrder("order:{$orderNumber}", __FILE__, __LINE__, json_encode($order));
-
 	}
 }
