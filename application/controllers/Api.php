@@ -162,10 +162,14 @@ class ApiController extends BaseController
 		}
 		unset($l);
 
-
+		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/application.ini", "good");	
+		$delaySeconds = $ini->get('pai_delay_seconds');
+		$currtime = time();
 		$goodModel = new GoodModel();
 		$g = $goodModel -> getRow($id, "end_time");
-		$list[0]['end_time_fmt'] = date("Y-m-d H:i:s", $g['end_time']);
+		if ($g['end_time'] > $currtime && $g['end_time'] < $currtime + $delaySeconds) {
+			$list[0]['end_time_fmt'] = date("Y-m-d H:i:s", $g['end_time']);
+		}
 
 		Response::displayJson(Response::E_SUCCESS, NULL, $list);
 	}
