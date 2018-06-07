@@ -135,7 +135,7 @@ class ApiController extends BaseController
 
 		// delay end time	
 		if ($currtime + $delaySeconds > $good['end_time']) {
-			$rs = $goodModel->update($good['id'], array('end_time' => $currtime + $delaySeconds));
+			$rs = $goodModel->update($id, array('end_time' => $currtime + $delaySeconds));
 			if (false === $rs) Response::displayJson(Response::E_MYSQL);
 			Response::displayJson(Response::E_SUCCESS, NULL, array("end_time_fmt"=> date("Y-m-d H:i:s", $currtime + $delaySeconds)));
 		}
@@ -369,6 +369,7 @@ class ApiController extends BaseController
 		foreach ($list as &$g) {
 			$g['remain_time'] = $g['end_time'] - time();
 			$g['pic_url'] = ImageModel::getUrl($g['pic']);
+			$g['end_time_fmt'] = date("Y-m-d H:i:s", $g['end_time']);
 
 			if ($status == 0) {
 				$g['offer_status'] = $g['last_uid'] == $uid ? 1 : 0;
