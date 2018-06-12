@@ -12,7 +12,7 @@ class NewsModel extends BaseModel
 	{
 	}
 
-	public function getStatusName($status)
+	public static function getStatusName($status)
 	{
 		if ($status == self::STATE_OFFLINE) return '下架';
 		if ($status == self::STATE_ONLINE) return '上架';
