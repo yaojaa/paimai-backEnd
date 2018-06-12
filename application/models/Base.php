@@ -203,4 +203,10 @@ abstract class BaseModel
 		return false;
 	}
 
+	public function delete($id)
+	{ 
+		$sql = "delete from {$this->table} where `{$this->pk}`={$id}";
+		return $this->query($sql);
+	}
+
 }

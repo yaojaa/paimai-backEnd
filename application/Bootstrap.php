@@ -43,5 +43,17 @@ class Bootstrap extends Yaf_Bootstrap_Abstract {
         $route = new Yaf_Route_Rewrite('admin/order/view', array('controller' => 'order', 'action' => 'view'));
         $router->addRoute('admin_order_view', $route);
 
+        $route = new Yaf_Route_Rewrite('admin/order/cancel', array('controller' => 'order', 'action' => 'cancel'));
+		$router->addRoute('admin_order_cancel', $route);
+
+        $route = new Yaf_Route_Rewrite('admin/news/add', array('controller' => 'news', 'action' => 'add'));
+        $router->addRoute('admin_news_add', $route);
+
+        $route = new Yaf_Route_Rewrite('admin/news/delete', array('controller' => 'news', 'action' => 'delete'));
+        $router->addRoute('admin_news_delete', $route);
+
+        $route = new Yaf_Route_Rewrite('admin/news/list', array('controller' => 'news', 'action' => 'list'));
+        $router->addRoute('admin_news_list', $route);
+
 	}
 }

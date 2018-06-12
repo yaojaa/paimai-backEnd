@@ -33,23 +33,23 @@
                 <div class="field required">
                     <label>商品名称</label>
                     <?php if (isset($good)) { ?>
-                    <input type="text" placeholder="请输入商品名称" name="title" value="<?php echo $good['title'];?>">
+                    <input type="text" placeholder="请输入商品名称" name="title" value="<?php echo $good['title'];?>" required="required">
                     <?php } else { ?>
-                    <input type="text" placeholder="请输入商品名称" name="title">
+                    <input type="text" placeholder="请输入商品名称" name="title" required="required">
                     <?php } ?>
                 </div>
                 <div class="three fields">
                     <div class="field required">
                         <label>作者</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入作者" name="author" value="<?php echo $good['author'];?>">
+                        <input type="text" placeholder="请输入作者" name="author" value="<?php echo $good['author'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入作者" name="author">
+                        <input type="text" placeholder="请输入作者" name="author" required="required">
                         <?php } ?>
                     </div>
                     <div class="field required">
                         <label>类别</label>
-                        <select class="ui fluid dropdown type-dropdown" name="category">
+                        <select class="ui fluid dropdown type-dropdown" name="category" required="required">
                             <option value="">请选择类别</option>
                             <option value="AK" <?php if(isset($good) && $good['category'] == 'AK') echo "selected";?>>当代名画</option>
                             <option value="AZ" <?php if(isset($good) && $good['category'] == 'AZ') echo "selected";?>>现代仿品</option>
@@ -59,9 +59,9 @@
                     <div class="field required">
                         <label>权重</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="值越小排序越靠前" name="seqid" value="<?php echo $good['seqid'];?>">
+                        <input type="text" placeholder="值越小排序越靠前" name="seqid" value="<?php echo $good['seqid'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="值越小排序越靠前" name="seqid">
+                        <input type="text" placeholder="值越小排序越靠前" name="seqid" required="required">
                         <?php } ?>
                     </div>
                 </div>
@@ -95,33 +95,33 @@
                     <div class="field required">
                         <label>加价金额</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入加价金额" name="incr_price" value="<?php echo $good['incr_price'];?>">
+                        <input type="text" placeholder="请输入加价金额" name="incr_price" value="<?php echo $good['incr_price'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入加价金额" name="incr_price" value="100">
+                        <input type="text" placeholder="请输入加价金额" name="incr_price" value="100" required="required">
                         <?php } ?>
                     </div>
                     <div class="field required">
                         <label>保证金</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入保证金" name="security_deposit" value="<?php echo $good['security_deposit'];?>">
+                        <input type="text" placeholder="请输入保证金" name="security_deposit" value="<?php echo $good['security_deposit'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入保证金" name="security_deposit">
+                        <input type="text" placeholder="请输入保证金" name="security_deposit" required="required">
                         <?php } ?>
                     </div>
                     <div class="field required">
                         <label>起拍价</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入起拍价" name="start_price" value="<?php echo $good['start_price'];?>">
+                        <input type="text" placeholder="请输入起拍价" name="start_price" value="<?php echo $good['start_price'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入起拍价" name="start_price">
+                        <input type="text" placeholder="请输入起拍价" name="start_price" required="required">
                         <?php } ?>
                     </div>
                     <div class="field required">
                         <label>参考价</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入参考价" name="market_price" value="<?php echo $good['market_price'];?>">
+                        <input type="text" placeholder="请输入参考价" name="market_price" value="<?php echo $good['market_price'];?>" required="required">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入参考价" name="market_price">
+                        <input type="text" placeholder="请输入参考价" name="market_price" required="required">
                         <?php } ?>
                     </div>
                 </div>
@@ -137,17 +137,17 @@
                     <div class="field required">
                         <label>开始时间</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入开始时间" id="start_time" name="start_time" value="<?php echo date(" Y-m-d H:i:s ",$good['start_time']);?>">
+                        <input type="text" placeholder="请输入开始时间" required="required" id="start_time" name="start_time" value="<?php echo date(" Y-m-d H:i:s ",$good['start_time']);?>">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入开始时间" id="start_time" name="start_time">
+                        <input type="text" placeholder="请输入开始时间" id="start_time" name="start_time" required="required">
                         <?php } ?>
                     </div>
                     <div class="field required">
                         <label>结束时间</label>
                         <?php if (isset($good)) { ?>
-                        <input type="text" placeholder="请输入结束时间" id="end_time" name="end_time" value="<?php echo date(" Y-m-d H:i:s ",$good['end_time']);?>">
+                        <input type="text" placeholder="请输入结束时间" required="required" id="end_time" name="end_time" value="<?php echo date(" Y-m-d H:i:s ",$good['end_time']);?>">
                         <?php } else { ?>
-                        <input type="text" placeholder="请输入结束时间" id="end_time" name="end_time">
+                        <input type="text" placeholder="请输入结束时间" id="end_time" name="end_time" required="required">
                         <?php } ?>
                     </div>
                 </div>
@@ -165,9 +165,9 @@
                     <?php } ?>
                 </div>
                 <?php if (isset($good)) { ?>
-                <textarea id="editor" placeholder="商品详情" autofocus name="description"><?php echo $good['description'];?></textarea>
+                <textarea id="editor" placeholder="商品详情" autofocus name="description" required="required"><?php echo $good['description'];?></textarea>
                 <?php } else { ?>
-                <textarea id="editor" placeholder="商品详情" autofocus name="description"></textarea>
+                <textarea id="editor" placeholder="商品详情" autofocus name="description" required="required"></textarea>
                 <?php } ?>
                 <div class="text-center mt-lg">
                     <input class="ui button blue large" type="submit" value="保存" method="post">
@@ -215,7 +215,7 @@
             id: '#filePicker',
             multiple: false
         },
-        fileNumLimit: 1,
+        fileNumLimit: 10,
         fileVal: 'pic[]',
 
         // 只允许选择图片文件。

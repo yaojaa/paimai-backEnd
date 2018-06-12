@@ -1,0 +1,191 @@
+<?php include "config.php";?>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>微艺拍后台管理系统</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="<?php echo CONFIG_BASE_URL;?>css/semantic.min.css" rel="stylesheet">
+    <link href="<?php echo CONFIG_BASE_URL;?>css/animate.min.css" rel="stylesheet">
+    <link href="<?php echo CONFIG_BASE_URL;?>css/webuploader/webuploader.css" rel="stylesheet">
+    <link href="<?php echo CONFIG_BASE_URL;?>css/simditor/simditor.css" rel="stylesheet">
+    <link href="<?php echo CONFIG_BASE_URL;?>css/common.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="ui container animated fadeInRight">
+        <div class="sub-title text-justify">
+            <h2 class="fwn"><span class="text-muted f16">艺讯管理</span>/添加艺讯</h2></div>
+        <div class="white-wrap p-xl">
+            <form action="/admin/news/add" class="ui form" method="post" id="myForm">
+                  <?php if (isset($news)) { ?>
+                    <input name="id" value="<?php echo $news['id'];?>" style="display: none">
+                    <?php } ?>
+                  <div class="field required">
+                    <label>标题</label>
+                    <?php if (isset($news)) { ?>
+                    <input type="text" placeholder="请输入艺讯标题" name="title" value="<?php echo $news['title'];?>" required="required">
+                    <?php } else { ?>
+                    <input type="text" placeholder="请输入艺讯标题" name="title" required="required">
+                    <?php } ?>
+                </div>
+                <div class="field required">
+                    <label>来源</label>
+                    <?php if (isset($news)) { ?>
+                    <input type="text" placeholder="请输入艺讯来源" name="source" value="<?php echo $news['source'];?>" required="required">
+                    <?php } else { ?>
+                    <input type="text" placeholder="请输入艺讯来源" name="source" required="required">
+                    <?php } ?>
+                </div>
+                <div id="uploader-demo" class="mb-sm">
+                    <?php if (isset($news)) { ?>
+                    <div id="fileList" class="uploader-list">
+                        <div class="file-item thumbnail"><img src="<?php echo $news['pic_url'];?>"></div>
+                    </div>
+                    <div id="filePicker">上传艺讯封面图</div><span class="text-muted">封面图比例为4：3，例：600*400</span>
+                    <input name="pic" value="<?php echo $news['pic_url'];?>" id="pic" style="display: none">
+                    <?php } else { ?>
+                    <div id="fileList" class="uploader-list"></div>
+                    <div id="filePicker">上传艺讯封面图</div><span class="text-muted">封面图比例为4：3，例：600*400</span>
+                    <input name="pic" value="" style="display: none" id="pic">
+                    <?php } ?>
+                </div>
+                <?php if (isset($news)) { ?>
+                <textarea id="editor" placeholder="艺讯内容" autofocus name="content" required="required">
+                    <?php echo $news['content'];?>
+                </textarea>
+                <?php } else { ?>
+                <textarea id="editor" placeholder="艺讯内容" autofocus name="content" required="required"></textarea>
+                <?php } ?>
+                <div class="text-center mt-lg">
+                    <input class="ui button blue large" type="submit" value="保存" method="post">
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/jquery.form/4.2.2/jquery.form.min.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/semantic.min.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/webuploader/webuploader.js"></script>
+    <script src="<?php echo CONFIG_BASE_URL;?>js/laydate/laydate.js"></script>
+    <!-- 文本编辑器 -->
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/simditor/module.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/simditor/hotkeys.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/simditor/uploader.js"></script>
+    <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/simditor/simditor.js"></script>
+    <script type="text/javascript">
+    var editor = new Simditor({
+        textarea: $("#editor"),
+        defaultImage: "img/head.jpg",
+        upload: {
+            url: '/upload/simditor', //文件上传的接口地址，对应的php里面和平时的表单控件上传图片一样$_FILES
+            params: null,
+            fileKey: 'pic[]',
+            connectionCount: 3,
+            leaveConfirm: '正在上传文件...'
+        }
+    })
+    var uploader = WebUploader.create({
+
+        // 选完文件后，是否自动上传。
+        auto: true,
+
+        // swf文件路径
+        swf: '/img/Uploader.swf',
+
+        // 文件接收服务端。
+        server: '/upload/pic',
+
+        // 选择文件的按钮。可选。
+        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+        pick: {
+            id: '#filePicker',
+            multiple: false
+        },
+        fileNumLimit: 10,
+        fileVal: 'pic[]',
+
+        // 只允许选择图片文件。
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/*'
+        }
+    });
+    // 当有文件添加进来的时候
+    uploader.on('fileQueued', function(file) {
+        var $li = $(
+                '<div id="' + file.id + '" class="file-item thumbnail">' +
+                '<img>'
+            ),
+            $img = $li.find('img');
+        // $list为容器jQuery实例
+        $('#fileList').html($li);
+
+        // 创建缩略图
+        // 如果为非图片文件，可以不用调用此方法。
+        // thumbnailWidth x thumbnailHeight 为 100 x 100
+        uploader.makeThumb(file, function(error, src) {
+            if (error) {
+                $img.replaceWith('<span>不能预览</span>');
+                return;
+            }
+
+            $img.attr('src', src);
+        }, 100, 100);
+    });
+    uploader.on('uploadProgress', function(file, percentage) {
+        var $li = $('#' + file.id),
+            $percent = $li.find('.progress span');
+
+        // 避免重复创建
+        if (!$percent.length) {
+            $percent = $('<p class="progress"><span></span></p>')
+                .appendTo($li)
+                .find('span');
+        }
+
+        $percent.css('width', percentage * 100 + '%');
+    });
+
+    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+    uploader.on('uploadSuccess', function(file, response) {
+        $('#' + file.id).addClass('upload-state-done');
+        $('#pic').val(response.data)
+    });
+
+    // 文件上传失败，显示上传出错。
+    uploader.on('uploadError', function(file) {
+        var $li = $('#' + file.id),
+            $error = $li.find('div.error');
+
+        // 避免重复创建
+        if (!$error.length) {
+            $error = $('<div class="error"></div>').appendTo($li);
+        }
+
+        $error.text('上传失败');
+    });
+
+    // 完成上传完了，成功或者失败，先删除进度条。
+    uploader.on('uploadComplete', function(file) {
+        $('#' + file.id).find('.progress').remove();
+    });
+    laydate.render({
+        elem: '#start_time',
+        //min:Date.now(),
+        type: 'datetime'
+    })
+    laydate.render({
+        elem: '#end_time',
+        //min:Date.now(),
+        type: 'datetime'
+    });
+    </script>
+</body>
+
+</html>

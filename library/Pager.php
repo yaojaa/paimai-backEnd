@@ -74,7 +74,7 @@ otmargin">末页</a></div>
             	if( $page == $i ) {
                    	$html .= "<a class='item active'>" . $i . "</a>";
                  } else {
-                   	$html .= '<a href="/admin/good/list?page='.$i.'" class="item">' . $i . '</a>';
+                   	$html .= '<a href="' . $url . $i . '" class="item">' . $i . '</a>';
                  }
             }
 
