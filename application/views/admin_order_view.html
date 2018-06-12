@@ -86,8 +86,7 @@
         <div class="text-center mt-lg">
 			<a href="/admin/order/list" class="ui button large">返回</a>
 			<?php if ($order['pay_status'] != -1) {?>
-			<button class="ui button yellow large">取消订单</button>
-			<?php } ?>
+            <a class="ui button yellow large" href="/admin/order/cancel?id=<?php echo $order["id"];?>">取消订单</a><?php } ?>
 		</div>
     </div>
 <?php include "admin_footer.html";?>
