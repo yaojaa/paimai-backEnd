@@ -14,19 +14,19 @@ class ApiController extends BaseController
 	public function getGoodListAction()
 	{
 		$status = (int)$this->getRequest()->getQuery('status', 0);
-		$page = (int)$this->getRequest()->getQuery('page', 0);
+		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$t = time();
 		$goodModel = new GoodModel();
 
-		$where = "status=1";
+		//ing
 		if ($status == 0) {
-			$where .= " and start_time < {$t} and end_time > {$t}";
+			$where = "status in (1,4) and start_time < {$t} and end_time > {$t}";
 		} else if ($status == 1) {
-			$where .= " and start_time > {$t}";
+			$where = "status in (1,4) and start_time > {$t}";
 		} else if ($status == 2) {
-			$where .= " and end_time < {$t}";
+			$where = "status in (1,2,3,4)  and end_time < {$t}";
 		} else {
-			$where .= " and 1=0";
+			$where = "status = 4 and 1=0";
 		}
 
 		$list = $goodModel->getLimit("id,author,title,pic,start_price,last_price,start_time,end_time", $where, "seqid asc, id desc", $page, self::PAGESIZE);
@@ -51,7 +51,7 @@ class ApiController extends BaseController
 		$goodModel = new GoodModel();
 		$good = $goodModel->getRow($id, "*");
 
-		if (!$good || ($good['status'] != 1 && $good['status'] != 2 && $good['status'] != 3)) 
+		if (!$good || ($good['status'] != 1 && $good['status'] != 2 && $good['status'] != 3 && $good['status'] != 4)) 
 			Response::displayJson(Response::E_PARAM, NULL);
 
 	
@@ -147,7 +147,7 @@ class ApiController extends BaseController
 
 	public function getGoodOfferListAction()
 	{
-		$page = (int)$this->getRequest()->getQuery('page', 0);
+		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$id = (int)$this->getRequest()->getQuery('id', 0);
 		$offerModel = new OfferModel();
 		$list = $offerModel -> getLimit("id,uid,offer_time,price", "good_id={$id}", "id desc", $page, self::PAGESIZE);
@@ -156,6 +156,7 @@ class ApiController extends BaseController
 		$userModel = new UserModel();
 		foreach ($list as &$l) {
 			$u = $userModel->getRow($l['uid'], "nick,pic");
+			$userModel->fmtUserHead($u);
 			$l['u_nick'] = $u['nick']; 
 			$l['u_head_fmt'] = $u['pic'];
 			$l['offer_time_fmt'] = date("Y-m-d H:i:s", $l['offer_time']);
@@ -302,8 +303,7 @@ class ApiController extends BaseController
 	public function waitingPayAction()
 	{
 		$uid = $this->checkLogin();
-		$page = (int)$this->getRequest()->getQuery('page', 1);
-		$page = $page < 1 ? 1 : $page;
+		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$orderModel = new OrderModel();
 		$orderBy = "id desc";
 		$where = "uid={$uid} and pay_status=0 and type=0";
@@ -348,8 +348,7 @@ class ApiController extends BaseController
 	{
 		$uid = $this->checkLogin();
 		$status = (int)$this->getRequest()->getQuery('status', 0);
-		$page = (int)$this->getRequest()->getQuery('page', 1);
-		$page = $page < 1 ? 1 : $page;
+		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$begin = ($page-1) * self::PAGESIZE;
 
 		$model = new GoodModel();
@@ -404,8 +403,7 @@ class ApiController extends BaseController
 
 	public function getNewsListAction()
 	{
-		$page = (int)$this->getRequest()->getQuery('page', 0);
-		$page = $page <= 1 ? 1 : $page;
+		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$model = new NewsModel();
 		$list = $model->getLimit("id,admin_id,title,pic,source,content,create_time", "1=1", "id desc", $page, self::PAGESIZE);
 		if (!$list)
@@ -413,7 +411,9 @@ class ApiController extends BaseController
 
 		foreach ($list as &$r) {
 			$r['create_time_fmt'] = date("Y-m-d H:i:s", $r['create_time']);
-			$r['content_fmt'] = mb_substr($r['content'], 0, 30);
+			$t = strip_tags($r['content']);
+			$t = preg_replace ('/&nbsp;/is', '', $t);
+			$r['content_fmt'] = mb_substr($t, 0, 30);
 		}
 			
 		ImageModel::fullNewsUrl($list);

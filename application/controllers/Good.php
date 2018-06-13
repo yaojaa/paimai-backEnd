@@ -191,6 +191,14 @@ class GoodController extends Yaf_Controller_Abstract {
 		$rs = $goodModel->update($id, array('status'=>-1));
 		Response::back("操作成功");
 	}
+
+	public function viewonlyAction()
+	{
+		$id = (int)$this->getRequest()->getQuery('id', 0);
+		$goodModel = new GoodModel();
+		$rs = $goodModel->update($id, array('status'=>4));
+		Response::back("操作成功");
+	}
 }
 ?>
 

@@ -28,6 +28,9 @@ class Bootstrap extends Yaf_Bootstrap_Abstract {
         $route = new Yaf_Route_Rewrite('admin/good/delete', array('controller' => 'good', 'action' => 'delete'));
         $router->addRoute('admin_good_delete', $route);
 
+        $route = new Yaf_Route_Rewrite('admin/good/viewonly', array('controller' => 'good', 'action' => 'viewonly'));
+        $router->addRoute('admin_good_viewonly', $route);
+
         $route = new Yaf_Route_Rewrite('admin/good/add', array('controller' => 'good', 'action' => 'add'));
         $router->addRoute('admin_good_add', $route);
 
