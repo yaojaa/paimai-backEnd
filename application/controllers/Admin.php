@@ -38,6 +38,13 @@ class AdminController extends Yaf_Controller_Abstract {
 		$sLogin->logout();
 		Response::redirect("/admin/login");
 	}
+
+	public function verifycodeAction()
+	{
+		$vc = new VerifyCode();  //实例化一个对象
+		$vc->doimg();  
+		$_SESSION['vcode'] = $vc->getCode();//验证码保存到SESSION中
+	}
 }
 ?>
 
