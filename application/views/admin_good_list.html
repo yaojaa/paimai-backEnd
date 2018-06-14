@@ -65,6 +65,7 @@
                         <td>
                             <a href="/admin/good/add?id=<?php echo $good['id'];?>" class="text-nowrap">编辑</a>
                             <a href="/admin/good/clone?id=<?php echo $good['id'];?>" class="text-nowrap">复制</a>
+                            <a href="/admin/good/viewonly?id=<?php echo $good['id'];?>" class="text-nowrap">只看</a>
                             <?php if ($good['status'] == 0) { ?>
                             <a href="/admin/good/online?id=<?php echo $good['id'];?>" class="text-nowrap">上架</a>
                             <?php } ?>

@@ -187,17 +187,23 @@
     <script type="text/javascript" src="<?php echo CONFIG_BASE_URL;?>js/simditor/simditor.js"></script>
     <script type="text/javascript">
     $('.type-dropdown').dropdown()
+
+    // 编辑器
     var editor = new Simditor({
-        textarea: $("#editor"),
-        defaultImage: "img/head.jpg",
-        upload: {
+      textarea: $("#editor"),
+      defaultImage: "img/head.jpg",
+      placeholder: '这里输入内容...',
+      toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment'],
+      pasteImage: true,
+      upload: {
             url: '/upload/simditor', //文件上传的接口地址，对应的php里面和平时的表单控件上传图片一样$_FILES
             params: null,
             fileKey: 'pic[]',
             connectionCount: 3,
             leaveConfirm: '正在上传文件...'
         }
-    })
+    });
+
     var uploader = WebUploader.create({
 
         // 选完文件后，是否自动上传。
@@ -223,6 +229,23 @@
             title: 'Images',
             extensions: 'gif,jpg,jpeg,bmp,png',
             mimeTypes: 'image/*'
+        },
+        thumb:{
+            width: 100,
+            height: 120,
+
+            // 图片质量，只有type为`image/jpeg`的时候才有效。
+            quality: 70,
+
+            // 是否允许放大，如果想要生成小图的时候不失真，此选项应该设置为false.
+            allowMagnify: true,
+
+            // 是否允许裁剪。
+            crop: false,
+
+            // 为空的话则保留原有图片格式。
+            // 否则强制转换成指定的类型。
+            type: 'image/jpeg'
         }
     });
     // 当有文件添加进来的时候
@@ -245,7 +268,7 @@
             }
 
             $img.attr('src', src);
-        }, 100, 100);
+        });
     });
     uploader.on('uploadProgress', function(file, percentage) {
         var $li = $('#' + file.id),
