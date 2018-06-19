@@ -66,8 +66,8 @@ class PayController extends BaseController
 		if (!$order)
 			Response::displayJson(Response::E_NO_OBJ, NULL);
 		
-		//$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
-		$rs = Wechat::pay($this->openId, $orderNumber, 1);
+		$rs = Wechat::pay($this->openId, $orderNumber, $order['total_fee']);
+		//$rs = Wechat::pay($this->openId, $orderNumber, 1);
 		if (!$rs) {
 			Response::displayJson(Response::E_WX_REQ, NULL);
 		}

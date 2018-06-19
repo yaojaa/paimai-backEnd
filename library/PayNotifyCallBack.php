@@ -40,7 +40,7 @@ class PayNotifyCallBack extends WxPayNotify
 			return false;
 		}
 
-		$status = $this->updateOrderStatus($data['out_trade_no'], $data['total_fee']);
+		$status = $this->updateOrderStatus($data['out_trade_no'], $data['total_fee']/100);
 		Log::wxNotify("OrderNumber=".$data['out_trade_no'], __FILE__, __LINE__, "updateOrderStatus={$status}");
 		if ($status < 0) return false;
 

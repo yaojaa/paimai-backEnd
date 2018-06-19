@@ -31,6 +31,7 @@ class PassportController extends Yaf_Controller_Abstract
 		$nick = $nick ? $nick : "HZ_".date("mdHis");
 		$sex = (int)$this->getRequest()->getPost('gender', 0);
 		$pic = $this->getRequest()->getPost('avatarUrl', '');
+		$pic = $pic ?  $pic : "/static/img/defaut_avatar.png";
 		$currtime = time();
 
 		$ini = new Yaf_Config_Ini(ROOT_PATH . "/conf/wechat.ini", "miniprogram");	

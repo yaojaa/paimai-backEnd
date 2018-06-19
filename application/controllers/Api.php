@@ -156,7 +156,6 @@ class ApiController extends BaseController
 		$userModel = new UserModel();
 		foreach ($list as &$l) {
 			$u = $userModel->getRow($l['uid'], "nick,pic");
-			$userModel->fmtUserHead($u);
 			$l['u_nick'] = $u['nick']; 
 			$l['u_head_fmt'] = $u['pic'];
 			$l['offer_time_fmt'] = date("Y-m-d H:i:s", $l['offer_time']);
@@ -396,7 +395,6 @@ class ApiController extends BaseController
 		$uid = $this->checkLogin();
 		$model = new UserModel();
 		$user = $model -> getRow($uid, "id,nick,pic,sex,mobile");
-		$model->fmtUserHead($user);
 		Response::displayJson(Response::E_SUCCESS, NULL, $user);
 	}
 
@@ -435,6 +433,30 @@ class ApiController extends BaseController
 	}
 
 
+	public function statPaiAction()
+	{
+		$uid = $this->checkLogin();
+		$data = array('out'=>0, 'head'=>0, 'paying'=>0);
+		$offerModel = new OfferModel();
+		$rs = $offerModel -> getAll("distinct(good_id)", "uid={$uid}", "id asc");
+		if (!$rs)  Response::displayJson(Response::E_SUCCESS, NULL, $data);
+
+		$gids = array();
+		foreach ($rs as $o) {
+			$gids[] = $o['good_id'];
+		}
+
+		$goodModel = new GoodModel();
+		$rsHead = $goodModel -> scalar("count(id) as c", "last_uid={$uid} and status=1", "id asc");
+		$rsPaying = $goodModel -> scalar("count(id) as c", "last_uid={$uid} and status=2", "id asc");
+		$rsPaid = $goodModel -> scalar("count(id) as c", "last_uid={$uid} and status=3", "id asc");
+		
+		$data['out'] = count($gids) - $rsHead['c'] - $rsPaying['c'] - $rsPaid['c']; 
+		$data['head'] = $rsHead['c'];
+		$data['paying'] = $rsPaying['c'];
+		
+		Response::displayJson(Response::E_SUCCESS, NULL, $data);
+	}
 
 }
 
