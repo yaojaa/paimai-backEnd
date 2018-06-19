@@ -403,7 +403,7 @@ class ApiController extends BaseController
 	{
 		$page = (int)$this->getRequest()->getQuery('page', 0) + 1;
 		$model = new NewsModel();
-		$list = $model->getLimit("id,admin_id,title,pic,source,content,create_time", "1=1", "id desc", $page, self::PAGESIZE);
+		$list = $model->getLimit("id,admin_id,title,pic,source,summary,content,create_time", "1=1", "id desc", $page, self::PAGESIZE);
 		if (!$list)
 			Response::displayJson(Response::E_SUCCESS, NULL, $list);
 
@@ -411,7 +411,7 @@ class ApiController extends BaseController
 			$r['create_time_fmt'] = date("Y-m-d H:i:s", $r['create_time']);
 			$t = strip_tags($r['content']);
 			$t = preg_replace ('/&nbsp;/is', '', $t);
-			$r['content_fmt'] = mb_substr($t, 0, 30);
+			$r['content_fmt'] = $r['summary'];
 		}
 			
 		ImageModel::fullNewsUrl($list);
