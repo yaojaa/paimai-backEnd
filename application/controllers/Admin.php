@@ -19,6 +19,9 @@ class AdminController extends Yaf_Controller_Abstract {
 		if ($this->getRequest()->getMethod() == 'POST') {
 			$username = $this->getRequest()->getPost('username');
 			$password = $this->getRequest()->getPost('password');
+			$vcode = $this->getRequest()->getPost('vcode');
+			#if ($vcode || $vcode != $_SESSION['vcode']) 
+			#	Response::displayJson(Response::E_VCODE);
 			$password = md5($password);
 			$adminModel = new AdminModel();
 			$user = $adminModel->scalar("id,password", "username='$username'", "id asc");
@@ -44,7 +47,7 @@ class AdminController extends Yaf_Controller_Abstract {
 		$vc = new VerifyCode();  //实例化一个对象
 		$_SESSION['vcode'] = $vc->randrsi();  
 		$vc->draw();
+		exit;
 	}
 }
-?>
 

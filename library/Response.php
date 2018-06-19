@@ -14,6 +14,7 @@ class Response
 	const E_USER_MOBILE_CODE = 4003;
 	const E_SMS_ERROR = 4004;
 	const E_SMS_EXPIRED = 4005;
+	const E_VCODE = 4006;
 
 	const E_ADDRESS_PROVINCE = 4101;
 	const E_ADDRESS_CITY = 4102;
@@ -46,6 +47,7 @@ class Response
 		self::E_USER_MOBILE_CODE => '验证码发送失败',
 		self::E_SMS_ERROR => '验证码错误',
 		self::E_SMS_EXPIRED => '验证码过期',
+		self::E_VCODE => '验证码错误',
 
 		self::E_ADDRESS_PROVINCE => '省份不能为空',
 		self::E_ADDRESS_CITY => '城市不能为空',

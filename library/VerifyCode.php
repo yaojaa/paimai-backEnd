@@ -49,90 +49,82 @@ class VerifyCode {
      * @return void
      */
     public  function randrsi() //生成验证码
-        {
-                $this->TFontAngle=range($this->TFontAngle[0],$this->TFontAngle[1]);
-                $this->TFontSize=range($this->TFontSize[0],$this->TFontSize[1]);
+    {
+	     $this->TFontAngle=range($this->TFontAngle[0],$this->TFontAngle[1]);
+	     $this->TFontSize=range($this->TFontSize[0],$this->TFontSize[1]);
+	
+	     $arr=array();
+	     $this->ttf_file= dirname(__FILE__)."/".$this->TFonts[0];
+	
+	     $charlen=strlen($this->Chars)-1;
+	     $anglelen=count($this->TFontAngle)-1;   //角度范围
+	     $fontsizelen=count($this->TFontSize)-1; //字体范围
+	     $fontcolorlen=count($this->FontColors)-1;//颜色范围
+	
+	     for($i=0;$i<$this->Length;$i++) //得到字符与颜色
+	     {
+		     //$char=$this->Chars[mt_rand(0,$charlen)]; //得到字符
+		     //$this->captcha_code.=$char;
+		                    
+		     $char=$this->Chars[rand(0,$charlen)]; ///得到字符
+		     $angle=$this->TFontAngle[rand(0,$anglelen)]; ///旋转角度
+		     $fontsize=$this->TFontSize[rand(0,$fontsizelen)]; ///字体大小
+		     $fontcolor=$this->FontColors[rand(0,$fontcolorlen)]; ///字体大小
+		     $bound=$this->_calculateTextBox($fontsize,$angle,$this->ttf_file,$char); ///得到范围
+		     $arr[]=array($fontsize,$angle,$fontcolor,$char,$this->ttf_file,$bound);  ///得到矩形框
+		     $this->captcha_code.=$char;
+	     }
 
-                $arr=array();
-        $this->ttf_file=dirname(dirname(__FILE__))."/Font/".$this->TFonts[0];
-
-                $charlen=strlen($this->Chars)-1;
-                $anglelen=count($this->TFontAngle)-1;   //角度范围
-                $fontsizelen=count($this->TFontSize)-1; //字体范围
-                $fontcolorlen=count($this->FontColors)-1;//颜色范围
-
-                for($i=0;$i<$this->Length;$i++) //得到字符与颜色
-                {
-                        //$char=$this->Chars[mt_rand(0,$charlen)]; //得到字符
-                        //$this->captcha_code.=$char;
-                    
-            $char=$this->Chars[rand(0,$charlen)]; ///得到字符
-                        $angle=$this->TFontAngle[rand(0,$anglelen)]; ///旋转角度
-                        $fontsize=$this->TFontSize[rand(0,$fontsizelen)]; ///字体大小
-                        $fontcolor=$this->FontColors[rand(0,$fontcolorlen)]; ///字体大小
-                        $bound=$this->_calculateTextBox($fontsize,$angle,$this->ttf_file,$char); ///得到范围
-                        $arr[]=array($fontsize,$angle,$fontcolor,$char,$this->ttf_file,$bound);  ///得到矩形框
-                        $this->captcha_code.=$char;
-                }
-        $this->code=$arr; //验证码
-                return $this->captcha_code; 
-        }
+	     $this->code=$arr; //验证码
+	     return $this->captcha_code; 
+      }
 
         public function draw() //画图
         {
-                if(empty($this->captcha_code)) $this->randrsi();
-
-                $this->Image = imagecreatetruecolor( $this->Width, $this->Height );
-        $this->tmpimg= imagecreatetruecolor($this->Width * $this->iscale, $this->Height * $this->iscale);
-        $line_color_arr    = $this->_getColor($this->line_color);
-        $this->gdlinecolor = imagecolorallocate($this->Image,$line_color_arr[0],$line_color_arr[1],$line_color_arr[2]);
-
-                $back = $this->_getColor2($this->_getColor( $this->BgColor)); //背景颜色
-                imageFilledrectangle($this->Image, 0, 0, $this->Width, $this->Height, $back); //填充背景
-        imagefilledrectangle($this->tmpimg, 0, 0,$this->Width * $this->iscale, $this->Height * $this->iscale,$back);//填充背景
-
-                $color = '';
-        $fontcolorlen = count($this->FontColors)-1;
-        $fontcolor = $this->FontColors[mt_rand(0,$fontcolorlen)]; 
-        $color = $this->_getColor2($this->_getColor($fontcolor));//每个字统一颜色
-        $this->gdlinecolor = $color;//干扰线的颜色可与字体一致。
-        imagepalettecopy($this->tmpimg, $this->Image);
-
-        $width2  = $this->Width * $this->iscale;
-        $height2 = $this->Height * $this->iscale;
-        $height2 = $this->Height * $this->iscale;
-
-        $ratio   = ($this->font_ratio) ? $this->font_ratio : 0.4;
-        if ((float)$ratio < 0.1 || (float)$ratio >= 1) {
-            $ratio = 0.4;
-        }
-
-        $font_size = $height2 * $ratio;
-        /*$bb = imageftbbox($font_size, 0, $this->ttf_file, $this->captcha_code);
-        $tx = $bb[4] - $bb[0];
-        $ty = $bb[5] - $bb[1];
-        $x  = floor($width2 / 2 - $tx / 2 - $bb[0]);
-        $y  = round($height2 / 2 - $ty / 2 - $bb[1]);    
-
-        imagettftext($this->tmpimg, $font_size, 0, $x, $y, $color, $this->ttf_file, $this->captcha_code);//一次四个字符 方案1
-        */
-        foreach ($this->code as $v) //逐个画字符，随机调整字符间距，实现黏连效果 方案2
-                {
-                        $bound=$v[5];
-                        imagettftext($this->tmpimg, $font_size, $v[1], $this->Txbase*$this->iscale+10, $bound['height']*$this->iscale+20,$color , $v[4], $v[3]);
-                        $this->Txbase=$this->Txbase+$bound['width']*$this->TPadden-$bound['left'];//计算下一个左边距
-                }
-
-        $this->distortedCopy();
-        //$this->TLine?$this->_wirteSinLine($color,$this->TLine_length):""; //画干扰线方案1
-        if($this->TLine) $this->drawLines(); //画干扰线方案2
-
-        header('Cache-Control: private, max-age=0, no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', false);
-        header('Pragma: no-cache');
-        header("Content-Type: image/png");
-                imagepng( $this->Image);
-                imagedestroy($this->Image);
+	        if(empty($this->captcha_code)) $this->randrsi();
+	        $this->Image = imagecreatetruecolor( $this->Width, $this->Height );
+	        $this->tmpimg= imagecreatetruecolor($this->Width * $this->iscale, $this->Height * $this->iscale);
+	        $line_color_arr    = $this->_getColor($this->line_color);
+	        $this->gdlinecolor = imagecolorallocate($this->Image,$line_color_arr[0],$line_color_arr[1],$line_color_arr[2]);
+	
+	        $back = $this->_getColor2($this->_getColor( $this->BgColor)); //背景颜色
+	        imageFilledrectangle($this->Image, 0, 0, $this->Width, $this->Height, $back); //填充背景
+	        imagefilledrectangle($this->tmpimg, 0, 0,$this->Width * $this->iscale, $this->Height * $this->iscale,$back);//填充背景
+	
+	        $color = '';
+	        $fontcolorlen = count($this->FontColors)-1;
+	        $fontcolor = $this->FontColors[mt_rand(0,$fontcolorlen)]; 
+	        $color = $this->_getColor2($this->_getColor($fontcolor));//每个字统一颜色
+	        $this->gdlinecolor = $color;//干扰线的颜色可与字体一致。
+	        imagepalettecopy($this->tmpimg, $this->Image);
+	
+	        $width2  = $this->Width * $this->iscale;
+	        $height2 = $this->Height * $this->iscale;
+	        $height2 = $this->Height * $this->iscale;
+	
+	        $ratio   = ($this->font_ratio) ? $this->font_ratio : 0.4;
+	        if ((float)$ratio < 0.1 || (float)$ratio >= 1) {
+	            $ratio = 0.4;
+	        }
+	
+	        $font_size = $height2 * $ratio;
+	        foreach ($this->code as $v) //逐个画字符，随机调整字符间距，实现黏连效果 方案2
+	        {
+	        	$bound=$v[5];
+	            imagettftext($this->tmpimg, $font_size, $v[1], $this->Txbase*$this->iscale+10, $bound['height']*$this->iscale+20,$color , $v[4], $v[3]);
+	            $this->Txbase=$this->Txbase+$bound['width']*$this->TPadden-$bound['left'];//计算下一个左边距
+	        }
+	
+	        $this->distortedCopy();
+	        //$this->TLine?$this->_wirteSinLine($color,$this->TLine_length):""; //画干扰线方案1
+	        if($this->TLine) $this->drawLines(); //画干扰线方案2
+	
+	        header('Cache-Control: private, max-age=0, no-store, no-cache, must-revalidate');
+	        header('Cache-Control: post-check=0, pre-check=0', false);
+	        header('Pragma: no-cache');
+	        header("Content-Type: image/png");
+	        imagepng( $this->Image);
+	        imagedestroy($this->Image);
         }
         
         /**

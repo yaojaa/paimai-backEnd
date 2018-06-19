@@ -44,6 +44,7 @@ class NewsController extends BackendController {
 			$title = $this->getRequest()->getPost('title', '');
 			$pic = $this->getRequest()->getPost('pic', '');
 			$source = $this->getRequest()->getPost('source', '');
+			$summary = $this->getRequest()->getPost('summary', '');
 			$content = $this->getRequest()->getPost('content', '');
 			$currtime = time();
 
@@ -71,6 +72,7 @@ class NewsController extends BackendController {
 						'title' => $title,
 						'pic' => $pic,
 						'source' => $source,
+						'summary' => $summary,
 						'content' => $content,
 						'status' => 1,
 						'create_time' => $currtime,
